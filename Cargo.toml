@@ -1,12 +1,9 @@
 [package]
-name = "lilOS"
+name = "lil_os"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-
 
 # Disable stack unwinding
 [profile.dev]
@@ -14,3 +11,9 @@ panic = "abort"
 
 [profile.release]
 panic = "abort"
+
+[unstable]
+build-std = ["core", "compiler_builtins"]
+
+[dependencies]
+bootloader = "0.9.8"

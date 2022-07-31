@@ -1,0 +1,14 @@
+# I added the links of these options because I am sure I will forget them
+
+[unstable]
+# https://os.phil-opp.com/minimal-rust-kernel/#memory-related-intrinsics
+build-std-features = ["compiler-builtins-mem"]
+# https://os.phil-opp.com/minimal-rust-kernel/#the-build-std-option
+build-std = ["core", "compiler_builtins"]
+
+# https://os.phil-opp.com/minimal-rust-kernel/#set-a-default-target
+[build]
+target = "targets/x86_64.json"
+
+[target.'cfg(target_os = "none")']
+runner = "bootimage runner"
