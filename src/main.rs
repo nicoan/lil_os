@@ -1,34 +1,33 @@
 #![no_std]
 #![no_main]
 
-static HELLO: &[u8] = b"Hello World!";
+pub mod drivers;
 
 use core::panic::PanicInfo;
 
+use crate::drivers::screen::text::Color;
+
 /// This function is called on panic
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
+    println!("{}", info);
     loop {}
 }
 
 /// Entrypoint of our OS
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    // https://os.phil-opp.com/minimal-rust-kernel/#printing-to-screen
-    let vga_buffer = 0xb8000 as *mut u8;
-
-    let mut color = 1;
-
-    for (i, &byte) in HELLO.iter().enumerate() {
-        color += 1;
-        if color > 16 {
-            color = 1;
-        }
-        unsafe {
-            *vga_buffer.offset(i as isize * 2) = byte;
-            *vga_buffer.offset(i as isize * 2 + 1) = color;
-        }
-    }
+    print!("Running test 1... [");
+    print!([Color::Green], "ok");
+    println!("]");
+    print!("Running test 2... [");
+    print!([Color::Red], "fail");
+    println!("]");
+    println!([Color::Yellow], "Hello world 1!");
+    println!([Color::Cyan, Color::Blue], "Hello world 2!",);
+    println!([Color::Brown, Color::Cyan], "Hello world 3!",);
+    println!([Color::Cyan], "The numbers are {} and {}", 42, 1.0 / 3.0);
+    println!("The numbers are {} and {}", 42, 1.0 / 3.0);
 
     loop {}
 }
