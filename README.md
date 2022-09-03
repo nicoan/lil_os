@@ -1,5 +1,7 @@
 # Lilo's Operating system
 
+**NOTE**: A lot of code-comments are directly taken from https://os.phil-opp.com/
+
 ## Build
 ```
 $ cargo bootimage
@@ -11,3 +13,4 @@ You need to have QEMU installed
 ```
 $ cargo run
 ```
+

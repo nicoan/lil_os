@@ -1,12 +1,12 @@
 ///! Generic definitions for text mode screens
 pub mod vga;
 
-pub const DEFAULT_FOREGROUND: Color = Color::LightGray;
-pub const DEFAULT_BACKGROUND: Color = Color::Black;
+pub const DEFAULT_FOREGROUND: PrintColor = PrintColor::LightGray;
+pub const DEFAULT_BACKGROUND: PrintColor = PrintColor::Black;
 
 /// Text colors
 #[allow(dead_code)]
-pub enum Color {
+pub enum PrintColor {
     Black,
     Blue,
     Green,
@@ -34,7 +34,7 @@ pub(crate) trait Writer {
 
     fn new_line(&mut self);
 
-    fn set_color(&mut self, foreground: Color, background: Color);
+    fn set_color(&mut self, foreground: PrintColor, background: PrintColor);
 }
 
 #[macro_export]
@@ -58,6 +58,8 @@ macro_rules! print {
     ($($arg:tt)*) => ($crate::drivers::screen::text::vga::_print(format_args!($($arg)*)));
 }
 
+pub use print;
+
 #[macro_export]
 macro_rules! println {
     ([$foreground: expr, $background: expr], $($arg:tt)*) => {
@@ -70,3 +72,5 @@ macro_rules! println {
         $crate::print!("{}\n", format_args!($($arg)*));
     }
 }
+
+pub use println;

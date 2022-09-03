@@ -1,33 +1,55 @@
 #![no_std]
 #![no_main]
+//! Since we are in a non-standard environment, we should define our own test framework.
+#![feature(custom_test_frameworks)]
+//! This is the entry-point to our test framework.
+#![test_runner(lil_os::tests::test_runner)]
+#![reexport_test_harness_main = "test_main"]
 
-pub mod drivers;
+use lil_os::{println, PrintColor};
 
-use core::panic::PanicInfo;
+/// Entrypoint of our OS
+#[no_mangle]
+#[cfg(not(test))]
+pub extern "C" fn _start() -> ! {
+    println!([PrintColor::Yellow], "Hello world 1!");
+    println!([PrintColor::Cyan, PrintColor::Blue], "Hello world 2!",);
+    println!([PrintColor::Brown, PrintColor::Cyan], "Hello world 3!",);
+    println!(
+        [PrintColor::Cyan],
+        "The numbers are {} and {}",
+        42,
+        1.0 / 3.0
+    );
+    println!("The numbers are {} and {}", 42, 1.0 / 3.0);
 
-use crate::drivers::screen::text::Color;
+    loop {}
+}
 
 /// This function is called on panic
+#[cfg(not(test))]
 #[panic_handler]
-fn panic(info: &PanicInfo) -> ! {
+fn panic(info: &core::panic::PanicInfo) -> ! {
     println!("{}", info);
     loop {}
 }
 
-/// Entrypoint of our OS
+// Unit testing entry points and handlers.
+// Here we define the custom test framework entrypoint and the panic handler. We need this
+// functions declared here in main.rs. Most of the test logic is contained in the test module.
+
+/// Custom test framework entry point.
 #[no_mangle]
+#[cfg(test)]
 pub extern "C" fn _start() -> ! {
-    print!("Running test 1... [");
-    print!([Color::Green], "ok");
-    println!("]");
-    print!("Running test 2... [");
-    print!([Color::Red], "fail");
-    println!("]");
-    println!([Color::Yellow], "Hello world 1!");
-    println!([Color::Cyan, Color::Blue], "Hello world 2!",);
-    println!([Color::Brown, Color::Cyan], "Hello world 3!",);
-    println!([Color::Cyan], "The numbers are {} and {}", 42, 1.0 / 3.0);
-    println!("The numbers are {} and {}", 42, 1.0 / 3.0);
+    test_main();
 
     loop {}
+}
+
+/// Custom test framework panic handler.
+#[cfg(test)]
+#[panic_handler]
+fn panic(info: &core::panic::PanicInfo) -> ! {
+    lil_os::tests::test_panic_handler(info)
 }

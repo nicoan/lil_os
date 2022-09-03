@@ -47,25 +47,25 @@ pub enum Color {
     White = 0xf,
 }
 
-impl From<super::Color> for Color {
-    fn from(color: super::Color) -> Self {
+impl From<super::PrintColor> for Color {
+    fn from(color: super::PrintColor) -> Self {
         match color {
-            super::Color::Black => Self::Black,
-            super::Color::Blue => Self::Blue,
-            super::Color::Green => Self::Green,
-            super::Color::Cyan => Self::Cyan,
-            super::Color::Red => Self::Red,
-            super::Color::Magenta => Self::Magenta,
-            super::Color::Brown => Self::Brown,
-            super::Color::LightGray => Self::LightGray,
-            super::Color::DarkGray => Self::DarkGray,
-            super::Color::LightBlue => Self::LightBlue,
-            super::Color::LightGreen => Self::LightGreen,
-            super::Color::LightCyan => Self::LightCyan,
-            super::Color::LightRed => Self::LightRed,
-            super::Color::Pink => Self::Pink,
-            super::Color::Yellow => Self::Yellow,
-            super::Color::White => Self::White,
+            super::PrintColor::Black => Self::Black,
+            super::PrintColor::Blue => Self::Blue,
+            super::PrintColor::Green => Self::Green,
+            super::PrintColor::Cyan => Self::Cyan,
+            super::PrintColor::Red => Self::Red,
+            super::PrintColor::Magenta => Self::Magenta,
+            super::PrintColor::Brown => Self::Brown,
+            super::PrintColor::LightGray => Self::LightGray,
+            super::PrintColor::DarkGray => Self::DarkGray,
+            super::PrintColor::LightBlue => Self::LightBlue,
+            super::PrintColor::LightGreen => Self::LightGreen,
+            super::PrintColor::LightCyan => Self::LightCyan,
+            super::PrintColor::LightRed => Self::LightRed,
+            super::PrintColor::Pink => Self::Pink,
+            super::PrintColor::Yellow => Self::Yellow,
+            super::PrintColor::White => Self::White,
         }
     }
 }
@@ -156,6 +156,7 @@ impl Writer for VGAWriter {
         }
     }
 
+    /// Clears the row with the default color
     fn clear_row(&mut self, row: usize) {
         for col in 0..BUFFER_WIDTH {
             self.buffer.chars[row][col].write(ScreenCharacter {
@@ -178,7 +179,7 @@ impl Writer for VGAWriter {
     }
 
     /// Sets the text background and foreground color
-    fn set_color(&mut self, foreground: super::Color, background: super::Color) {
+    fn set_color(&mut self, foreground: super::PrintColor, background: super::PrintColor) {
         self.color = ColorCode::new(foreground.into(), background.into());
     }
 }
@@ -197,6 +198,28 @@ pub fn _print(args: core::fmt::Arguments) {
 }
 
 #[doc(hidden)]
-pub fn _set_color(foreground: super::Color, background: super::Color) {
+pub fn _set_color(foreground: super::PrintColor, background: super::PrintColor) {
     WRITER.lock().set_color(foreground, background);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test_case]
+    fn test_println_many() {
+        for _ in 0..200 {
+            crate::println!("test_print output");
+        }
+    }
+
+    #[test_case]
+    fn test_println_output() {
+        let s = "Some test string that fits on a single line";
+        crate::println!("{}", s);
+        for (i, c) in s.chars().enumerate() {
+            let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
+            assert_eq!(char::from(screen_char.character), c);
+        }
+    }
 }
