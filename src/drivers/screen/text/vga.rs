@@ -1,13 +1,21 @@
 //! VGA Text mode buffer driver
+//!
+//! The VGA text mode is part of the VGA standard. The features are colored text, background and
+//! various cursor modes among other things. This is one of the simples way of printing text in the
+//! screen.
+//!
+//! We can uses the Memory Mapped Input Output (MMIO) method to interact with the VGA buffer, this
+//! means, writing to an specific address (starting at 0xb8000) as if it was the main memory.
 //! Most of the code is from https://os.phil-opp.com/vga-text-mode/
 use crate::drivers::screen::text::Writer;
+use crate::os_core::volatile::Volatile;
 use core::clone::Clone;
 use core::fmt::Write;
 use core::marker::Copy;
+use core::ops::{Deref, DerefMut};
 use core::prelude::v1::derive;
 use lazy_static::lazy_static;
 use spin::Mutex;
-use volatile::Volatile;
 
 // The vga buffer is a 80x25 matrix
 const BUFFER_WIDTH: usize = 80;
@@ -15,10 +23,13 @@ const BUFFER_HEIGHT: usize = 25;
 const BUFFER_LAST_ROW: usize = BUFFER_HEIGHT - 1;
 const DEFAULT_COLOR: ColorCode = ColorCode::new(Color::LightGray, Color::Black);
 
+// Global instance of the VGA buffer
 lazy_static! {
     pub static ref WRITER: Mutex<VGAWriter> = Mutex::new(VGAWriter {
         column_position: 0,
         color: DEFAULT_COLOR,
+        // This is a raw pointer to 0xb8000 adress in memory. We set the Buffer to the beginning of
+        // this VGA Text buffer
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
     });
 }
@@ -83,18 +94,40 @@ impl ColorCode {
     }
 }
 
+impl Deref for ColorCode {
+    type Target = u8;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 /// Represents a character in the VGA buffer. First 8 bits are the character itsef and the later 8
 /// bits are the color.
 // The repr(C) macro guarantees that the struct's fields are laid out exactly like a C struct, and
 // thus guarantees the correct field ordering.
-#[repr(C)]
+#[repr(transparent)]
 #[derive(Copy, Clone)]
-struct ScreenCharacter {
-    /// Ascii char code
-    character: u8,
+struct ScreenCharacter(u16);
 
-    /// Color code
-    color: ColorCode,
+impl ScreenCharacter {
+    pub fn new(character: u8, color: ColorCode) -> Self {
+        Self((character as u16) | (*color as u16) << 8)
+    }
+}
+
+impl Deref for ScreenCharacter {
+    type Target = u16;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for ScreenCharacter {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
 }
 
 /// Represents the caracter buffer. This buffer will be mapped to the actual VGA text buffer
@@ -126,10 +159,8 @@ impl Writer for VGAWriter {
                 }
 
                 // Otherwise we print the character
-                self.buffer.chars[BUFFER_LAST_ROW][self.column_position].write(ScreenCharacter {
-                    character: byte,
-                    color: self.color,
-                });
+                self.buffer.chars[BUFFER_LAST_ROW][self.column_position]
+                    .write(*ScreenCharacter::new(byte, self.color));
 
                 // We go to the next position
                 self.column_position += 1;
@@ -159,10 +190,7 @@ impl Writer for VGAWriter {
     /// Clears the row with the default color
     fn clear_row(&mut self, row: usize) {
         for col in 0..BUFFER_WIDTH {
-            self.buffer.chars[row][col].write(ScreenCharacter {
-                character: b' ',
-                color: DEFAULT_COLOR,
-            });
+            self.buffer.chars[row][col].write(*ScreenCharacter::new(b' ', DEFAULT_COLOR));
         }
     }
 
@@ -219,7 +247,7 @@ mod tests {
         crate::println!("{}", s);
         for (i, c) in s.chars().enumerate() {
             let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
-            assert_eq!(char::from(screen_char.character), c);
+            assert_eq!(char::from(screen_char as u8), c);
         }
     }
 }

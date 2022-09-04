@@ -7,6 +7,7 @@
 #![reexport_test_harness_main = "test_main"]
 
 pub mod drivers;
+pub mod os_core;
 pub mod tests;
 
 // "Global scope" exports
