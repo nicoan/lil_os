@@ -23,6 +23,7 @@ pub extern "C" fn _start() -> ! {
     );
     println!("The numbers are {} and {}", 42, 1.0 / 3.0);
 
+    #[allow(clippy::empty_loop)]
     loop {}
 }
 
@@ -31,6 +32,7 @@ pub extern "C" fn _start() -> ! {
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
     println!("{}", info);
+    #[allow(clippy::empty_loop)]
     loop {}
 }
 
@@ -44,6 +46,7 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
 pub extern "C" fn _start() -> ! {
     test_main();
 
+    #[allow(clippy::empty_loop)]
     loop {}
 }
 

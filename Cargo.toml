@@ -39,4 +39,3 @@ uart_16550 = "0.2"
 cfg-if = "1.0.0"
 bootloader = "0.9.8"
 lazy_static = { version = "1", features = ["spin_no_std"] }
-spin = "0.9.4"

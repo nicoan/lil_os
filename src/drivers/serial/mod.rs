@@ -1,5 +1,5 @@
+use crate::os_core::spinlock::Mutex;
 use lazy_static::lazy_static;
-use spin::Mutex;
 use uart_16550::SerialPort;
 
 /// Port address to where we are going to write our data.

@@ -8,6 +8,7 @@
 //! means, writing to an specific address (starting at 0xb8000) as if it was the main memory.
 //! Most of the code is from https://os.phil-opp.com/vga-text-mode/
 use crate::drivers::screen::text::Writer;
+use crate::os_core::spinlock::Mutex;
 use crate::os_core::volatile::Volatile;
 use core::clone::Clone;
 use core::fmt::Write;
@@ -15,7 +16,7 @@ use core::marker::Copy;
 use core::ops::{Deref, DerefMut};
 use core::prelude::v1::derive;
 use lazy_static::lazy_static;
-use spin::Mutex;
+// use spin::Mutex;
 
 // The vga buffer is a 80x25 matrix
 const BUFFER_WIDTH: usize = 80;

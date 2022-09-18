@@ -45,6 +45,7 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
     serial_println!("[\x1b[1;31mFAILED\x1b[0m]");
     serial_println!("Error: {}", info);
     exit_qemu(QemuExitCode::Failed);
+    #[allow(clippy::empty_loop)]
     loop {}
 }
 
