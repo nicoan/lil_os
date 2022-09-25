@@ -2,13 +2,17 @@
 //!
 //! P.S: Most documentation comments are taken from https://doc.rust-lang.org/std/sync/struct.Mutex.html
 //
-// Some useul links:
+// Some useful links:
 // https://doc.rust-lang.org/std/sync/atomic/enum.Ordering.html
 // https://blog.rustbr.org/en/understanding-atomics/
 // https://fy.blackhats.net.au/blog/html/2019/07/16/cpu_atomics_and_orderings_explained.html
+// https://www.youtube.com/watch?v=rMGWeSjctlY -> GREAT resource
 use core::cell::UnsafeCell;
 use core::ops::{Deref, DerefMut};
 use core::sync::atomic::{AtomicBool, Ordering};
+
+const LOCKED: bool = true;
+const UNLOCKED: bool = false;
 
 /// Represents all the possible errors that can happen when using this lock.
 pub enum MutexError {
@@ -45,7 +49,12 @@ impl<T> Mutex<T> {
     ///
     /// This function does not block.
     pub fn try_lock(&self) -> Result<MutexGuard<T>, MutexError> {
-        if self.locked.swap(true, Ordering::Acquire) {
+        // Check if it is locked
+        if self
+            .locked
+            .compare_exchange_weak(UNLOCKED, LOCKED, Ordering::Acquire, Ordering::Relaxed)
+            .is_err()
+        {
             Err(MutexError::AlreadyLocked)
         } else {
             Ok(MutexGuard { mutex: self })
@@ -62,6 +71,17 @@ impl<T> Mutex<T> {
         loop {
             if let Ok(mutex_guard) = self.try_lock() {
                 return mutex_guard;
+            } else {
+                // The try_lock operation uses compare_exchange_weak under the hood. That atomic
+                // operation is quite expensive because the core that executes it asks for
+                // exclusive access (Exclusive state -E- in MESI protocol). A lot of cores asking
+                // all the time for exclusive access results in a lot of overhead because it
+                // requires a lot of coordination.
+                // The load operation in this loop only reads the status (shared state -S- in MESI
+                // protocol), avoiding all the coordination efforts and not asking for exclusive
+                // access
+                // For more information at hardware level of this check out the MESI protocol
+                while self.locked.load(Ordering::Relaxed) {}
             }
         }
     }
@@ -76,7 +96,7 @@ impl<T> Mutex<T> {
 
     /// Releases the lock.
     fn release(&self) {
-        self.locked.store(false, Ordering::Release);
+        self.locked.store(UNLOCKED, Ordering::Release);
     }
 }
 
