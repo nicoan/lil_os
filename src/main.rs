@@ -6,22 +6,35 @@
 #![test_runner(lil_os::tests::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
-use lil_os::{println, PrintColor};
+use lazy_static::lazy_static;
+use lil_os::arch::x86_64::idt::InterruptDescriptorTable;
+use lil_os::{print, println, PrintColor};
+
+lazy_static! {
+    static ref IDT: InterruptDescriptorTable = {
+        let mut idt = InterruptDescriptorTable::new();
+        idt.init();
+        idt
+    };
+}
 
 /// Entrypoint of our OS
 #[no_mangle]
 #[cfg(not(test))]
 pub extern "C" fn _start() -> ! {
-    println!([PrintColor::Yellow], "Hello world 1!");
-    println!([PrintColor::Cyan, PrintColor::Blue], "Hello world 2!",);
-    println!([PrintColor::Brown, PrintColor::Cyan], "Hello world 3!",);
-    println!(
-        [PrintColor::Cyan],
-        "The numbers are {} and {}",
-        42,
-        1.0 / 3.0
-    );
-    println!("The numbers are {} and {}", 42, 1.0 / 3.0);
+    print!("Loading IDT...");
+    IDT.load();
+    println!([PrintColor::Green], " OK");
+
+    // trigger a page fault
+    unsafe {
+        *(0xdeadbeef as *mut u64) = 42;
+    };
+
+    // Invoke an instruction to check if IDT this works
+    unsafe {
+        core::arch::asm!("int3", options(nomem, nostack));
+    }
 
     #[allow(clippy::empty_loop)]
     loop {}

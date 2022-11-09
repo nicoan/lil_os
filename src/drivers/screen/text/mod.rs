@@ -35,6 +35,8 @@ pub(crate) trait Writer {
     fn new_line(&mut self);
 
     fn set_color(&mut self, foreground: PrintColor, background: PrintColor);
+
+    fn clear_screen(&mut self, background: Option<PrintColor>);
 }
 
 #[macro_export]
@@ -69,6 +71,20 @@ macro_rules! println {
         $crate::print!([$foreground], "{}\n", format_args!($($arg)*));
     };
     ($($arg:tt)*) => {
+        $crate::print!("{}\n", format_args!($($arg)*));
+    }
+}
+
+#[macro_export]
+macro_rules! panic_screen {
+    ($($arg:tt)*) => {
+        $crate::drivers::screen::text::vga::_set_color(
+            $crate::drivers::screen::text::PrintColor::LightGray,
+            $crate::drivers::screen::text::PrintColor::Blue
+        );
+        $crate::drivers::screen::text::vga::_clear_screen(
+            Some($crate::drivers::screen::text::PrintColor::Blue)
+        );
         $crate::print!("{}\n", format_args!($($arg)*));
     }
 }

@@ -39,6 +39,7 @@ dependencies = [
 name = "lil_os"
 version = "0.1.0"
 dependencies = [
+ "bit_field",
  "bootloader",
  "cfg-if",
  "lazy_static",

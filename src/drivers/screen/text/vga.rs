@@ -191,7 +191,7 @@ impl Writer for VGAWriter {
     /// Clears the row with the default color
     fn clear_row(&mut self, row: usize) {
         for col in 0..BUFFER_WIDTH {
-            self.buffer.chars[row][col].write(*ScreenCharacter::new(b' ', DEFAULT_COLOR));
+            self.buffer.chars[row][col].write(*ScreenCharacter::new(b' ', self.color));
         }
     }
 
@@ -211,6 +211,18 @@ impl Writer for VGAWriter {
     fn set_color(&mut self, foreground: super::PrintColor, background: super::PrintColor) {
         self.color = ColorCode::new(foreground.into(), background.into());
     }
+
+    /// Clears screens with the current background color
+    fn clear_screen(&mut self, background: Option<super::PrintColor>) {
+        let color = background
+            .map(|c| ColorCode::new(Color::LightGray, c.into()))
+            .unwrap_or(DEFAULT_COLOR);
+        for row in 1..BUFFER_HEIGHT {
+            for col in 0..BUFFER_WIDTH {
+                self.buffer.chars[row][col].write(*ScreenCharacter::new(b' ', color));
+            }
+        }
+    }
 }
 
 /// This allow us to use Rust's formatting macros!
@@ -229,6 +241,11 @@ pub fn _print(args: core::fmt::Arguments) {
 #[doc(hidden)]
 pub fn _set_color(foreground: super::PrintColor, background: super::PrintColor) {
     WRITER.lock().set_color(foreground, background);
+}
+
+#[doc(hidden)]
+pub fn _clear_screen(background: Option<super::PrintColor>) {
+    WRITER.lock().clear_screen(background);
 }
 
 #[cfg(test)]
