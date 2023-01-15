@@ -40,3 +40,16 @@ cfg-if = "1.0.0"
 bootloader = "0.9.8"
 bit_field = "0.10"
 lazy_static = { version = "1", features = ["spin_no_std"] }
+
+[[test]]
+name = "idt_stack_overflow"
+harness = false
+
+[[test]]
+name = "idt_breakpoint_handler"
+harness = false
+
+[[test]]
+name = "idt_divide_by_zero_handler"
+harness = false
+

@@ -6,35 +6,14 @@
 #![test_runner(lil_os::tests::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
-use lazy_static::lazy_static;
-use lil_os::arch::x86_64::idt::InterruptDescriptorTable;
-use lil_os::{print, println, PrintColor};
-
-lazy_static! {
-    static ref IDT: InterruptDescriptorTable = {
-        let mut idt = InterruptDescriptorTable::new();
-        idt.init();
-        idt
-    };
-}
-
 /// Entrypoint of our OS
 #[no_mangle]
 #[cfg(not(test))]
 pub extern "C" fn _start() -> ! {
-    print!("Loading IDT...");
-    IDT.load();
-    println!([PrintColor::Green], " OK");
+    use lil_os::arch::x86_64::initialize_x86_64_arch;
+    use lil_os::os_core::messages::init_with_message;
 
-    // trigger a page fault
-    unsafe {
-        *(0xdeadbeef as *mut u64) = 42;
-    };
-
-    // Invoke an instruction to check if IDT this works
-    unsafe {
-        core::arch::asm!("int3", options(nomem, nostack));
-    }
+    init_with_message("x86_64 architecture", initialize_x86_64_arch);
 
     #[allow(clippy::empty_loop)]
     loop {}
@@ -44,6 +23,7 @@ pub extern "C" fn _start() -> ! {
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
+    use lil_os::println;
     println!("{}", info);
     #[allow(clippy::empty_loop)]
     loop {}

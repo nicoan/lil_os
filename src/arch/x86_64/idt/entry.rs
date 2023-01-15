@@ -3,8 +3,12 @@
 //! This module holds a representation of a IDT's entry
 
 use super::handlers::{
-    HandlerFunc, HandlerFuncWithErrCode, HandlerFuncWithErrCodeDiverging, PageFaultHandlerFunc,
+    HandlerFunc,
+    HandlerFuncWithErrCode,
+    HandlerFuncWithErrCodeDiverging,
+    // PageFaultHandlerFunc,
 };
+use crate::arch::x86_64::registers::segments::CS;
 use bit_field::BitField;
 use core::marker::PhantomData;
 
@@ -51,25 +55,26 @@ impl<F> Entry<F> {
 macro_rules! implement_set_handler_function {
     ($t: ty) => {
         impl Entry<$t> {
-            /// Sets a hanlder function for the given entry.
+            /// Sets a hanlder function for the given entry. Returns a mutable reference to the
+            /// handler options in case we need to modify them beyond the standard options.
             ///
             /// # Arguments
             /// * `hanlder` - A handler function.
-            pub fn set_handler_function(&mut self, handler: $t) {
+            pub fn set_handler_function(&mut self, handler: $t) -> &mut Options {
                 // Set the function pointer
                 let handler = handler as usize;
                 self.function_pointer_low = handler as u16;
                 self.function_pointer_middle = (handler >> 16) as u16;
                 self.function_pointer_high = (handler >> 32) as u32;
 
-                // https://wiki.osdev.org/Segment_Selector
-                // https://wiki.osdev.org/Segmentation
                 // Set the gdt_selector to code segment
-                self.gdt_selector = 0x08;
+                self.gdt_selector = *CS::get_register();
 
                 // Set the present flag
                 self.options.set_present(true);
                 self.options.disable_interrupts(true);
+
+                &mut self.options
             }
         }
     };
@@ -95,7 +100,7 @@ implement_set_handler_function!(HandlerFuncWithErrCode);
 /// * 15: Present - If the entry is present.
 #[repr(transparent)]
 #[derive(Copy, Clone, Debug)]
-struct Options(u16);
+pub struct Options(u16);
 
 impl Options {
     /// Returns default Options.
@@ -117,6 +122,14 @@ impl Options {
     /// Disables/Enables interrupts when another interrupt is beign handled.
     pub fn disable_interrupts(&mut self, disable: bool) -> &mut Self {
         self.0.set_bit(8, !disable);
+        self
+    }
+
+    /// Sets the stack index to be used for this interrupt
+    pub fn set_stack_index(&mut self, index: usize) -> &mut Self {
+        // We add 1 to the index because the hardware IST index starts at 1 but our indexing starts
+        // at 0.
+        self.0.set_bits(0..=2, (index + 1) as u16);
         self
     }
 }

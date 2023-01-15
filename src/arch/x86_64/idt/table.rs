@@ -1,6 +1,8 @@
 //! Interrupt Description Table for x86_64
 //!
 //! This module contains a representation of the entire IDT.
+use crate::arch::x86_64::{address::VirtualMemoryAddress, gdt::tss::DOUBLE_FAULT_IST_INDEX};
+
 use super::{
     entry::Entry,
     handlers::{
@@ -89,7 +91,7 @@ impl InterruptDescriptorTable {
     pub fn load(&'static self) {
         let pointer = IDTDescriptor {
             limit: (core::mem::size_of::<InterruptDescriptorTable>() - 1) as u16,
-            base: (self as *const _) as u64,
+            base: VirtualMemoryAddress::new((self as *const _) as u64),
         };
 
         unsafe { asm!("lidt [{}]", in(reg) &pointer, options(readonly, nostack, preserves_flags)) }
@@ -102,7 +104,9 @@ impl InterruptDescriptorTable {
         self.breakpoint.set_handler_function(breakpoint_handler);
         self.divide_by_zero
             .set_handler_function(divide_by_zero_handler);
-        self.double_fault.set_handler_function(double_fault_handler);
+        self.double_fault
+            .set_handler_function(double_fault_handler)
+            .set_stack_index(DOUBLE_FAULT_IST_INDEX);
     }
 }
 
@@ -119,5 +123,5 @@ struct IDTDescriptor {
 
     ///  The linear address of the Interrupt Descriptor Table (not the physical address, paging
     ///  applies).
-    base: u64,
+    base: VirtualMemoryAddress,
 }

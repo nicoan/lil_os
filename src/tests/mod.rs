@@ -12,12 +12,14 @@
 //! host OS console and not directly in QEMU. Writing directly in the serial port outputs the data
 //! in the host console (this is configured in Cargo.toml, package.metadata.bootimage section.
 // #![cfg(test)]
+pub mod idt;
 mod qemu;
 
-use crate::tests::qemu::{exit_qemu, QemuExitCode};
 use crate::{serial_print, serial_println};
 use core::any::type_name;
 use core::panic::PanicInfo;
+
+pub use crate::tests::qemu::{exit_qemu, QemuExitCode};
 
 /// This trait is used to print the tests statements automatically. The trick is to print the
 /// messages directly in the run function, and implement this trait for every T: Fn()
