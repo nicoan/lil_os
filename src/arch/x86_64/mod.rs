@@ -1,6 +1,7 @@
 pub mod address;
 pub mod gdt;
 pub mod idt;
+pub mod interrupts;
 pub mod privilege;
 pub mod registers;
 
