@@ -16,7 +16,9 @@ pub extern "C" fn _start() -> ! {
     init_with_message("x86_64 architecture", initialize_x86_64_arch);
 
     #[allow(clippy::empty_loop)]
-    loop {}
+    loop {
+        lil_os::print!("-"); // new
+    }
 }
 
 /// This function is called on panic

@@ -34,7 +34,7 @@ pub struct Mutex<T> {
 
 impl<T> Mutex<T> {
     /// Creates a new mutex in an unlocked state ready for use.
-    pub fn new(data: T) -> Self {
+    pub const fn new(data: T) -> Self {
         Self {
             locked: AtomicBool::new(false),
             data: UnsafeCell::new(data),

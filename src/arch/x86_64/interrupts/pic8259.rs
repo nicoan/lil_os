@@ -24,12 +24,7 @@
 //! - https://os.phil-opp.com/hardware-interrupts/
 //! - https://wiki.osdev.org/8259_PIC
 
-use core::cell::RefCell;
-
 use x86_64::instructions::port::Port;
-
-/// End of interrupt (EOI) command
-const CMD_END_OF_INTERRUPT: u8 = 0x20;
 
 // NOTE: Only the needed ICW for initializing IBM PC AT are listed since it is not probable that we
 // will use other configuration. In the future the idea is to use APIC instrad of IBM PC AT.
@@ -37,13 +32,12 @@ const CMD_END_OF_INTERRUPT: u8 = 0x20;
 /// https://www.eeeguide.com/8259-programmable-interrupt-controller/
 pub const ICW1_ICW4_NEEDED: u8 = 0x01;
 pub const ICW1_INIT: u8 = 0x10;
-
 pub const ICW4_8086_MODE: u8 = 0x01;
 
 /// Mask for disabling the PIC.
 const MASK_DISABLE: u8 = 0xff;
 
-#[repr(C)]
+#[repr(u8)]
 pub enum Pic8259Command {
     /// Notify us that an interrupt has been handled and that we're ready for more.
     EndOfInterrupt = 0x20,
@@ -61,10 +55,10 @@ pub struct Pic8259 {
     pub offset: u8,
 
     /// The I/O port to which we send commands.
-    command: RefCell<Port<u8>>,
+    command: Port<u8>,
 
     /// The I/O port to which we send data.
-    data: RefCell<Port<u8>>,
+    data: Port<u8>,
 }
 
 impl Pic8259 {
@@ -72,8 +66,8 @@ impl Pic8259 {
     pub const fn new(offset: u8, command_port: u8, data_port: u8) -> Self {
         Self {
             offset,
-            command: RefCell::new(Port::new(command_port as u16)),
-            data: RefCell::new(Port::new(data_port as u16)),
+            command: Port::new(command_port as u16),
+            data: Port::new(data_port as u16),
         }
     }
 
@@ -85,11 +79,11 @@ impl Pic8259 {
     /// - Programmer must be sure that the I/O port we are using is valid and initialized.
     /// - We are using interior mutability pattern. Programmer must be sure that the borrowing
     /// rules are followed in runtime (not borrowing mutable reference twice)
-    pub unsafe fn execute_command<T>(&self, command: T)
+    pub unsafe fn execute_command<T>(&mut self, command: T)
     where
         T: Into<u8>,
     {
-        self.command.borrow_mut().write(command.into());
+        self.command.write(command.into());
     }
 
     /// Reads the interrupt mask of this PIC.
@@ -100,8 +94,8 @@ impl Pic8259 {
     /// - Programmer must be sure that the I/O port we are using is valid and initialized.
     /// - We are using interior mutability pattern. Programmer must be sure that the borrowing
     /// rules are followed in runtime (not borrowing mutable reference twice)
-    pub unsafe fn read_mask(&self) -> u8 {
-        self.data.borrow_mut().read()
+    pub unsafe fn read_mask(&mut self) -> u8 {
+        self.data.read()
     }
 
     /// Reads the interrupt mask of this PIC.
@@ -112,8 +106,8 @@ impl Pic8259 {
     /// - Programmer must be sure that the I/O port we are using is valid and initialized.
     /// - We are using interior mutability pattern. Programmer must be sure that the borrowing
     /// rules are followed in runtime (not borrowing mutable reference twice)
-    pub unsafe fn write_mask(&self, mask: u8) {
-        self.data.borrow_mut().write(mask)
+    pub unsafe fn write_mask(&mut self, mask: u8) {
+        self.data.write(mask)
     }
 
     /// Disables this PIC
@@ -124,7 +118,7 @@ impl Pic8259 {
     /// - Programmer must be sure that the I/O port we are using is valid and initialized.
     /// - We are using interior mutability pattern. Programmer must be sure that the borrowing
     /// rules are followed in runtime (not borrowing mutable reference twice)
-    pub unsafe fn disable(&self) {
-        self.data.borrow_mut().write(MASK_DISABLE);
+    pub unsafe fn disable(&mut self) {
+        self.data.write(MASK_DISABLE);
     }
 }

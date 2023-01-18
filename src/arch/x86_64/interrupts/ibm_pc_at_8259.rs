@@ -54,6 +54,28 @@ const PIC_2_DATA: u8 = PIC_2_COMMAND + 1;
 const PIC_1_OFFSET: u8 = 0x20;
 const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
 
+// TODO: IDK if this structure makes sense, check it when APIC is programmed
+/// Interrupts' indexes.
+///
+/// The indexes will we used in the IDT. Timer is the first interrupt. This means it arrives at
+/// the CPU at interrupt 0x20 (0 + PIC 1 offset).
+#[repr(u8)]
+#[derive(Clone, Copy)]
+pub enum InterruptIndex {
+    Timer = PIC_1_OFFSET,
+}
+
+impl InterruptIndex {
+    pub fn as_u8(self) -> u8 {
+        self as u8
+    }
+
+    pub fn as_usize(self) -> usize {
+        usize::from(self.as_u8())
+    }
+}
+
+/// Struct that implements the IBM PC/AT 8259 architecture.
 pub struct IBMPcAt8259 {
     pic1: Pic8259,
     pic2: Pic8259,
@@ -70,7 +92,7 @@ impl IBMPcAt8259 {
 
     /// More info on the initialization process here:
     /// https://www.eeeguide.com/8259-programmable-interrupt-controller/
-    pub unsafe fn initialize(&self) {
+    pub unsafe fn initialize(&mut self) {
         // First we save the original interupt masks to restore them at the end of the
         // initialization sequence
         let pic_1_saved_mask = self.pic1.read_mask();
@@ -103,17 +125,17 @@ impl IBMPcAt8259 {
         self.pic2.write_mask(pic_2_saved_mask);
     }
 
-    pub unsafe fn read_mask(&self, irq: u8) -> u8 {
+    pub unsafe fn read_mask(&mut self, irq: u8) -> u8 {
         let pic = self.get_pic(irq);
         pic.read_mask()
     }
 
-    pub unsafe fn write_mask(&self, irq: u8, mask: u8) {
+    pub unsafe fn write_mask(&mut self, irq: u8, mask: u8) {
         let pic = self.get_pic(irq);
         pic.write_mask(mask)
     }
 
-    pub unsafe fn disable(&self) {
+    pub unsafe fn disable(&mut self) {
         self.pic1.disable();
         self.pic2.disable();
     }
@@ -129,7 +151,7 @@ impl IBMPcAt8259 {
     /// - IRQ index must be valid (0 <= IRQ <= 15)
     /// - Programmer must be sure that the I/O port we are using is valid and initialized.
     /// - The I/O port could have side effects that violate memory safety.
-    pub unsafe fn end_of_interrupt(&self, irq: u8) {
+    pub unsafe fn end_of_interrupt(&mut self, irq: u8) {
         if irq >= 8 {
             self.pic2.execute_command(Pic8259Command::EndOfInterrupt);
         }
@@ -137,11 +159,11 @@ impl IBMPcAt8259 {
         self.pic1.execute_command(Pic8259Command::EndOfInterrupt);
     }
 
-    fn get_pic(&self, irq: u8) -> &Pic8259 {
+    fn get_pic(&mut self, irq: u8) -> &mut Pic8259 {
         if irq < 8 {
-            &self.pic1
+            &mut self.pic1
         } else {
-            &self.pic2
+            &mut self.pic2
         }
     }
 }
