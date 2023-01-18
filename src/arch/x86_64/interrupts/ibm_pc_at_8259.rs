@@ -31,7 +31,9 @@
 //! - https://os.phil-opp.com/hardware-interrupts/
 //! - https://wiki.osdev.org/8259_PIC
 
-use crate::arch::x86_64::interrupts::pic8259::Pic8259Command;
+use crate::arch::x86_64::interrupts::pic8259::{
+    Pic8259Command, ICW1_ICW4_NEEDED, ICW1_INIT, ICW4_8086_MODE,
+};
 
 use super::pic8259::Pic8259;
 
@@ -52,7 +54,7 @@ const PIC_2_DATA: u8 = PIC_2_COMMAND + 1;
 const PIC_1_OFFSET: u8 = 0x20;
 const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
 
-struct IBMPcAt8259 {
+pub struct IBMPcAt8259 {
     pic1: Pic8259,
     pic2: Pic8259,
 }
@@ -75,22 +77,30 @@ impl IBMPcAt8259 {
         let pic_2_saved_mask = self.pic2.read_mask();
 
         // Initialization command word 1 (ICW1) - Initialization of both pics
-        self.pic1.execute_command(Pic8259Command::Initialize);
-        self.pic2.execute_command(Pic8259Command::Initialize);
+        self.pic1.execute_command(ICW1_INIT | ICW1_ICW4_NEEDED);
+        self.pic2.execute_command(ICW1_INIT | ICW1_ICW4_NEEDED);
 
-        // Initialization command word 2 (ICW2) - Set the vector offset
+        // ICW2 - Set the vector offset
         self.pic1.write_mask(self.pic1.offset);
-        self.pic2.write_mask(self.pic1.offset);
+        self.pic2.write_mask(self.pic2.offset);
 
         // ICW3 - Configure the PICS in cascade mode (secondary -> primary)
         // First, we tell the primary pic which request line will be used for receiving
         // interruption from the secondary. The bits set in 1 will be the ones chained with other
         // pic. In this case is IRQ2 (counting from right to left)
         self.pic1.write_mask(0b00000100);
-        // After that we set the cascade ID for the secondary PIC
+        // After that we set the cascade identity for the secondary PIC (it is 2 since it cascades
+        // to the IRQ2 of the first PIC)
         self.pic2.write_mask(2);
 
-        todo!();
+        // ICW4 - Mode
+        // Set that we will use an 8086 processor
+        self.pic1.write_mask(ICW4_8086_MODE);
+        self.pic2.write_mask(ICW4_8086_MODE);
+
+        // Restore the saved masks
+        self.pic1.write_mask(pic_1_saved_mask);
+        self.pic2.write_mask(pic_2_saved_mask);
     }
 
     pub unsafe fn read_mask(&self, irq: u8) -> u8 {
@@ -121,10 +131,10 @@ impl IBMPcAt8259 {
     /// - The I/O port could have side effects that violate memory safety.
     pub unsafe fn end_of_interrupt(&self, irq: u8) {
         if irq >= 8 {
-            self.pic2.end_of_interrupt();
+            self.pic2.execute_command(Pic8259Command::EndOfInterrupt);
         }
 
-        self.pic1.end_of_interrupt();
+        self.pic1.execute_command(Pic8259Command::EndOfInterrupt);
     }
 
     fn get_pic(&self, irq: u8) -> &Pic8259 {

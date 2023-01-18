@@ -31,29 +31,29 @@ use x86_64::instructions::port::Port;
 /// End of interrupt (EOI) command
 const CMD_END_OF_INTERRUPT: u8 = 0x20;
 
+// NOTE: Only the needed ICW for initializing IBM PC AT are listed since it is not probable that we
+// will use other configuration. In the future the idea is to use APIC instrad of IBM PC AT.
+// For more information and all the other ICW:
 /// https://www.eeeguide.com/8259-programmable-interrupt-controller/
-/// ICW
-const ICW1_ICW4_NEEDED: u8 = 0x01;
+pub const ICW1_ICW4_NEEDED: u8 = 0x01;
+pub const ICW1_INIT: u8 = 0x10;
 
-/// Initialization command. This is public because is used by the architecture implementations
-pub const CMD_INITIALIZE: u8 = 0x11;
+pub const ICW4_8086_MODE: u8 = 0x01;
+
+/// Mask for disabling the PIC.
+const MASK_DISABLE: u8 = 0xff;
 
 #[repr(C)]
 pub enum Pic8259Command {
     /// Notify us that an interrupt has been handled and that we're ready for more.
     EndOfInterrupt = 0x20,
-
-    /// Starts the initialization sequence.
-    /// This command makes the PIC wait for 3 extra "initialisation words" on the data port. These
-    /// bytes give the PIC:
-    /// - Its vector offset.
-    /// - Tell it how it is wired to master/slaves.
-    /// - Gives additional information about the environment.
-    Initialize = 0x11,
 }
 
-/// Mask for disabling the PIC.
-const MASK_DISABLE: u8 = 0xff;
+impl From<Pic8259Command> for u8 {
+    fn from(val: Pic8259Command) -> Self {
+        val as u8
+    }
+}
 
 /// And individual PIC Chip.
 pub struct Pic8259 {
@@ -85,21 +85,11 @@ impl Pic8259 {
     /// - Programmer must be sure that the I/O port we are using is valid and initialized.
     /// - We are using interior mutability pattern. Programmer must be sure that the borrowing
     /// rules are followed in runtime (not borrowing mutable reference twice)
-    pub unsafe fn execute_command(&self, command: Pic8259Command) {
-        self.command.borrow_mut().write(command as u8);
-    }
-
-    /// Notify us that an interrupt has been handled and that we're ready
-    /// for more.
-    ///
-    /// # Safety
-    ///
-    /// This is unsafe becuase:
-    /// - Programmer must be sure that the I/O port we are using is valid and initialized.
-    /// - We are using interior mutability pattern. Programmer must be sure that the borrowing
-    /// rules are followed in runtime (not borrowing mutable reference twice)
-    pub unsafe fn end_of_interrupt(&self) {
-        self.execute_command(Pic8259Command::EndOfInterrupt as u8);
+    pub unsafe fn execute_command<T>(&self, command: T)
+    where
+        T: Into<u8>,
+    {
+        self.command.borrow_mut().write(command.into());
     }
 
     /// Reads the interrupt mask of this PIC.
