@@ -31,6 +31,8 @@
 //! - https://os.phil-opp.com/hardware-interrupts/
 //! - https://wiki.osdev.org/8259_PIC
 
+use crate::arch::x86_64::interrupts::pic8259::Pic8259Command;
+
 use super::pic8259::Pic8259;
 
 // I/O Command port number
@@ -64,7 +66,30 @@ impl IBMPcAt8259 {
         }
     }
 
-    pub unsafe fn initialize() {
+    /// More info on the initialization process here:
+    /// https://www.eeeguide.com/8259-programmable-interrupt-controller/
+    pub unsafe fn initialize(&self) {
+        // First we save the original interupt masks to restore them at the end of the
+        // initialization sequence
+        let pic_1_saved_mask = self.pic1.read_mask();
+        let pic_2_saved_mask = self.pic2.read_mask();
+
+        // Initialization command word 1 (ICW1) - Initialization of both pics
+        self.pic1.execute_command(Pic8259Command::Initialize);
+        self.pic2.execute_command(Pic8259Command::Initialize);
+
+        // Initialization command word 2 (ICW2) - Set the vector offset
+        self.pic1.write_mask(self.pic1.offset);
+        self.pic2.write_mask(self.pic1.offset);
+
+        // ICW3 - Configure the PICS in cascade mode (secondary -> primary)
+        // First, we tell the primary pic which request line will be used for receiving
+        // interruption from the secondary. The bits set in 1 will be the ones chained with other
+        // pic. In this case is IRQ2 (counting from right to left)
+        self.pic1.write_mask(0b00000100);
+        // After that we set the cascade ID for the secondary PIC
+        self.pic2.write_mask(2);
+
         todo!();
     }
 
