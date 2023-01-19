@@ -4,7 +4,10 @@
 use crate::arch::x86_64::{
     address::VirtualMemoryAddress,
     gdt::tss::DOUBLE_FAULT_IST_INDEX,
-    interrupts::{handlers::timer_interrupt_handler, InterruptIndex},
+    interrupts::{
+        handlers::{keyboard_interrupt_handler, timer_interrupt_handler},
+        InterruptIndex,
+    },
 };
 
 use super::{
@@ -117,6 +120,7 @@ impl InterruptDescriptorTable {
 
         // Hardware interrupts
         self[InterruptIndex::Timer.as_usize()].set_handler_function(timer_interrupt_handler);
+        self[InterruptIndex::Keyboard.as_usize()].set_handler_function(keyboard_interrupt_handler);
     }
 }
 

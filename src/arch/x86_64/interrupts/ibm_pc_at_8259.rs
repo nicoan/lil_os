@@ -63,6 +63,7 @@ const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
 #[derive(Clone, Copy)]
 pub enum InterruptIndex {
     Timer = PIC_1_OFFSET,
+    Keyboard = PIC_1_OFFSET + 1,
 }
 
 impl InterruptIndex {
