@@ -16,6 +16,7 @@ use core::marker::Copy;
 use core::ops::{Deref, DerefMut};
 use core::prelude::v1::derive;
 use lazy_static::lazy_static;
+use x86_64::instructions::interrupts::without_interrupts;
 // use spin::Mutex;
 
 // The vga buffer is a 80x25 matrix
@@ -233,19 +234,35 @@ impl core::fmt::Write for VGAWriter {
     }
 }
 
+// TODO: _print, _set_color and _clear_screen should not be placed here in vga, they should be more
+// general and support more text modes. When developing more modes move this these functions to
+// mod.rs
+
 #[doc(hidden)]
 pub fn _print(args: core::fmt::Arguments) {
-    WRITER.lock().write_fmt(args).unwrap();
+    // TODO: Disabling the interrupts is specific for x86 at the moment, if we are going to support
+    // more architectures, we need to refactor this.
+    without_interrupts(|| {
+        WRITER.lock().write_fmt(args).unwrap();
+    })
 }
 
 #[doc(hidden)]
 pub fn _set_color(foreground: super::PrintColor, background: super::PrintColor) {
-    WRITER.lock().set_color(foreground, background);
+    // TODO: Disabling the interrupts is specific for x86 at the moment, if we are going to support
+    // more architectures, we need to refactor this.
+    without_interrupts(|| {
+        WRITER.lock().set_color(foreground, background);
+    })
 }
 
 #[doc(hidden)]
 pub fn _clear_screen(background: Option<super::PrintColor>) {
-    WRITER.lock().clear_screen(background);
+    // TODO: Disabling the interrupts is specific for x86 at the moment, if we are going to support
+    // more architectures, we need to refactor this.
+    without_interrupts(|| {
+        WRITER.lock().clear_screen(background);
+    })
 }
 
 #[cfg(test)]
@@ -254,9 +271,11 @@ mod tests {
 
     #[test_case]
     fn test_println_many() {
-        for _ in 0..200 {
-            crate::println!("test_print output");
-        }
+        without_interrupts(|| {
+            for _ in 0..200 {
+                crate::println!("test_print output");
+            }
+        });
     }
 
     #[test_case]

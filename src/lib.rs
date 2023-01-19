@@ -16,6 +16,14 @@ pub mod tests;
 // "Global scope" exports
 pub use drivers::screen::text::PrintColor;
 
+/// Halts the CPU until the next interrupt hits. This prevents the CPU to spin endessly and waste
+/// cycles doing nothing.
+pub fn hlt_loop() -> ! {
+    loop {
+        x86_64::instructions::hlt();
+    }
+}
+
 // Integration testing entry points and handlers.
 // Here we define the custom test framework entrypoint and the panic handler. We need this
 // functions declared here in lib.rs. Most of the test logic is contained in the test module.
@@ -24,8 +32,7 @@ pub use drivers::screen::text::PrintColor;
 pub extern "C" fn _start() -> ! {
     test_main();
 
-    #[allow(clippy::empty_loop)]
-    loop {}
+    hlt_loop();
 }
 
 #[cfg(test)]

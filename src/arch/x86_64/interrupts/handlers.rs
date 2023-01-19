@@ -1,5 +1,5 @@
 use super::{ibm_pc_at_8259::InterruptIndex, PICS};
-use crate::{arch::x86_64::idt::InterruptStackFrame, print};
+use crate::arch::x86_64::idt::InterruptStackFrame;
 
 macro_rules! create_interrupt_handler {
     ($name: ident, $irq: expr, $body: expr) => {
@@ -15,5 +15,5 @@ macro_rules! create_interrupt_handler {
 }
 
 create_interrupt_handler!(timer_interrupt_handler, InterruptIndex::Timer, {
-    print!(".");
+    // print!(".");
 });

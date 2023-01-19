@@ -17,7 +17,9 @@ pub extern "C" fn _start() -> ! {
 
     #[allow(clippy::empty_loop)]
     loop {
-        lil_os::print!("-"); // new
+        // Halts the CPU until the next interrupt hits. This prevents the CPU to spin endessly
+        // and waste cycles doing nothing.
+        x86_64::instructions::hlt();
     }
 }
 
@@ -28,7 +30,10 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
     use lil_os::println;
     println!("{}", info);
     #[allow(clippy::empty_loop)]
-    loop {}
+    loop {
+        // Halts the CPU after the panic
+        x86_64::instructions::hlt();
+    }
 }
 
 // Unit testing entry points and handlers.
