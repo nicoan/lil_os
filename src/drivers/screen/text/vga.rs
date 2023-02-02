@@ -8,8 +8,8 @@
 //! means, writing to an specific address (starting at 0xb8000) as if it was the main memory.
 //! Most of the code is from https://os.phil-opp.com/vga-text-mode/
 use crate::drivers::screen::text::Writer;
-use crate::os_core::spinlock::Mutex;
-use crate::os_core::volatile::Volatile;
+use crate::os_core::memory::volatile::Volatile;
+use crate::os_core::synchronization::spinlock::Mutex;
 use core::clone::Clone;
 use core::fmt::Write;
 use core::marker::Copy;

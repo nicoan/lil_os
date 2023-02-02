@@ -3,7 +3,7 @@ mod ibm_pc_at_8259;
 pub(crate) mod pic8259;
 
 use self::ibm_pc_at_8259::IBMPcAt8259;
-use crate::os_core::spinlock::Mutex;
+use crate::os_core::synchronization::spinlock::Mutex;
 
 pub use ibm_pc_at_8259::InterruptIndex;
 

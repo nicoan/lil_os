@@ -1,6 +1,6 @@
 use super::{ibm_pc_at_8259::InterruptIndex, PICS};
+use crate::arch::x86_64::idt::InterruptStackFrame;
 use crate::interrupts::{keyboard_handler, timer_handler};
-use crate::{arch::x86_64::idt::InterruptStackFrame, print};
 
 macro_rules! create_interrupt_handler {
     ($name: ident, $irq: expr, $body: expr) => {
@@ -24,5 +24,6 @@ create_interrupt_handler!(keyboard_interrupt_handler, InterruptIndex::Keyboard, 
 
     let mut port = Port::new(0x60);
     let scancode: u8 = unsafe { port.read() };
+
     keyboard_handler(scancode);
 });

@@ -1,3 +1,3 @@
+pub mod memory;
 pub mod messages;
-pub mod spinlock;
-pub mod volatile;
+pub mod synchronization;
