@@ -1,6 +1,7 @@
-use crate::os_core::spinlock::Mutex;
+use crate::os_core::synchronization::spinlock::Mutex;
 use lazy_static::lazy_static;
 use uart_16550::SerialPort;
+use x86_64::instructions::interrupts::without_interrupts;
 
 /// Port address to where we are going to write our data.
 const PORT_ADDRESS: u16 = 0x3f8;
@@ -17,10 +18,13 @@ lazy_static! {
 #[doc(hidden)]
 pub fn _print(args: ::core::fmt::Arguments) {
     use core::fmt::Write;
-    SERIAL1
-        .lock()
-        .write_fmt(args)
-        .expect("Printing to serial failed");
+
+    without_interrupts(|| {
+        SERIAL1
+            .lock()
+            .write_fmt(args)
+            .expect("Printing to serial failed");
+    })
 }
 
 /// Print through the serial interface.

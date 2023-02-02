@@ -15,7 +15,7 @@
 pub mod idt;
 mod qemu;
 
-use crate::{serial_print, serial_println};
+use crate::{hlt_loop, serial_print, serial_println};
 use core::any::type_name;
 use core::panic::PanicInfo;
 
@@ -47,8 +47,7 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
     serial_println!("[\x1b[1;31mFAILED\x1b[0m]");
     serial_println!("Error: {}", info);
     exit_qemu(QemuExitCode::Failed);
-    #[allow(clippy::empty_loop)]
-    loop {}
+    hlt_loop();
 }
 
 /// Grabs all the tests marked with #[test_case] macro and executes them.

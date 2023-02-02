@@ -4,7 +4,7 @@
 use core::format_args;
 use core::panic::PanicInfo;
 use lil_os::tests::{exit_qemu, test_panic_handler, QemuExitCode};
-use lil_os::{arch::x86_64::initialize_x86_64_arch, os_core::volatile, serial_print};
+use lil_os::{arch::x86_64::initialize_x86_64_arch, os_core::memory::volatile, serial_print};
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {

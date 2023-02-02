@@ -1,7 +1,14 @@
 //! Interrupt Description Table for x86_64
 //!
 //! This module contains a representation of the entire IDT.
-use crate::arch::x86_64::{address::VirtualMemoryAddress, gdt::tss::DOUBLE_FAULT_IST_INDEX};
+use crate::arch::x86_64::{
+    address::VirtualMemoryAddress,
+    gdt::tss::DOUBLE_FAULT_IST_INDEX,
+    interrupts::{
+        handlers::{keyboard_interrupt_handler, timer_interrupt_handler},
+        InterruptIndex,
+    },
+};
 
 use super::{
     entry::Entry,
@@ -10,7 +17,10 @@ use super::{
         HandlerFuncWithErrCode, HandlerFuncWithErrCodeDiverging, PageFaultHandlerFunc,
     },
 };
-use core::arch::asm;
+use core::{
+    arch::asm,
+    ops::{Index, IndexMut},
+};
 
 /// Interrupt Descriptor Table
 ///
@@ -107,6 +117,76 @@ impl InterruptDescriptorTable {
         self.double_fault
             .set_handler_function(double_fault_handler)
             .set_stack_index(DOUBLE_FAULT_IST_INDEX);
+
+        // Hardware interrupts
+        self[InterruptIndex::Timer.as_usize()].set_handler_function(timer_interrupt_handler);
+        self[InterruptIndex::Keyboard.as_usize()].set_handler_function(keyboard_interrupt_handler);
+    }
+}
+
+// NOTE: Indexes implementations taken from
+// https://docs.rs/x86_64/latest/src/x86_64/structures/idt.rs.html#536-598
+impl Index<usize> for InterruptDescriptorTable {
+    type Output = Entry<HandlerFunc>;
+
+    /// Returns the IDT entry with the specified index.
+    ///
+    /// Panics if index is outside the IDT (i.e. greater than 255) or if the entry is an
+    /// exception that pushes an error code (use the struct fields for accessing these entries).
+    #[inline]
+    fn index(&self, index: usize) -> &Self::Output {
+        match index {
+            0 => &self.divide_by_zero,
+            1 => &self.debug,
+            2 => &self.non_maskable_interrupt,
+            3 => &self.breakpoint,
+            4 => &self.overflow,
+            5 => &self.bound_range_exceeded,
+            6 => &self.invalid_opcode,
+            7 => &self.device_not_available,
+            9 => &self.coprocessor_segment_overrun,
+            16 => &self.x87_floating_point,
+            19 => &self.simd_floating_point,
+            20 => &self.virtualization,
+            i @ 32..=255 => &self.interrupts[i - 32],
+            i @ 15 | i @ 31 | i @ 21..=28 => panic!("entry {} is reserved", i),
+            i @ 8 | i @ 10..=14 | i @ 17 | i @ 29 | i @ 30 => {
+                panic!("entry {} is an exception with error code", i)
+            }
+            i @ 18 => panic!("entry {} is an diverging exception (must not return)", i),
+            i => panic!("no entry with index {}", i),
+        }
+    }
+}
+
+impl IndexMut<usize> for InterruptDescriptorTable {
+    /// Returns a mutable reference to the IDT entry with the specified index.
+    ///
+    /// Panics if index is outside the IDT (i.e. greater than 255) or if the entry is an
+    /// exception that pushes an error code (use the struct fields for accessing these entries).
+    #[inline]
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        match index {
+            0 => &mut self.divide_by_zero,
+            1 => &mut self.debug,
+            2 => &mut self.non_maskable_interrupt,
+            3 => &mut self.breakpoint,
+            4 => &mut self.overflow,
+            5 => &mut self.bound_range_exceeded,
+            6 => &mut self.invalid_opcode,
+            7 => &mut self.device_not_available,
+            9 => &mut self.coprocessor_segment_overrun,
+            16 => &mut self.x87_floating_point,
+            19 => &mut self.simd_floating_point,
+            20 => &mut self.virtualization,
+            i @ 32..=255 => &mut self.interrupts[i - 32],
+            i @ 15 | i @ 31 | i @ 21..=28 => panic!("entry {} is reserved", i),
+            i @ 8 | i @ 10..=14 | i @ 17 | i @ 29 | i @ 30 => {
+                panic!("entry {} is an exception with error code", i)
+            }
+            i @ 18 => panic!("entry {} is an diverging exception (must not return)", i),
+            i => panic!("no entry with index {}", i),
+        }
     }
 }
 

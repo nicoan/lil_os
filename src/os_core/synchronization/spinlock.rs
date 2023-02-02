@@ -34,7 +34,7 @@ pub struct Mutex<T> {
 
 impl<T> Mutex<T> {
     /// Creates a new mutex in an unlocked state ready for use.
-    pub fn new(data: T) -> Self {
+    pub const fn new(data: T) -> Self {
         Self {
             locked: AtomicBool::new(false),
             data: UnsafeCell::new(data),
@@ -81,7 +81,9 @@ impl<T> Mutex<T> {
                 // protocol), avoiding all the coordination efforts and not asking for exclusive
                 // access
                 // For more information at hardware level of this check out the MESI protocol
-                while self.locked.load(Ordering::Relaxed) {}
+                while self.locked.load(Ordering::Relaxed) {
+                    core::hint::spin_loop()
+                }
             }
         }
     }

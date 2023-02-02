@@ -1,8 +1,11 @@
 pub mod address;
 pub mod gdt;
 pub mod idt;
+pub mod interrupts;
 pub mod privilege;
 pub mod registers;
+
+use self::interrupts::PICS;
 
 /// Loads the x86 system tables
 fn load_tables() {
@@ -12,5 +15,10 @@ fn load_tables() {
 
 /// Initializes the x86_64 arch
 pub fn initialize_x86_64_arch() {
+    // Initialize system tables
     load_tables();
+
+    // Initialize interrupts
+    unsafe { PICS.lock().initialize() };
+    x86_64::instructions::interrupts::enable(); // TODO: Write our own asm code for this
 }

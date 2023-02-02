@@ -16,7 +16,11 @@ pub extern "C" fn _start() -> ! {
     init_with_message("x86_64 architecture", initialize_x86_64_arch);
 
     #[allow(clippy::empty_loop)]
-    loop {}
+    loop {
+        // Halts the CPU until the next interrupt hits. This prevents the CPU to spin endessly
+        // and waste cycles doing nothing.
+        x86_64::instructions::hlt();
+    }
 }
 
 /// This function is called on panic
@@ -26,7 +30,10 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
     use lil_os::println;
     println!("{}", info);
     #[allow(clippy::empty_loop)]
-    loop {}
+    loop {
+        // Halts the CPU after the panic
+        x86_64::instructions::hlt();
+    }
 }
 
 // Unit testing entry points and handlers.
