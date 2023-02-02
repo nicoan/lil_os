@@ -10,6 +10,7 @@
 
 pub mod arch;
 pub mod drivers;
+pub mod interrupts;
 pub mod os_core;
 pub mod tests;
 

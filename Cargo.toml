@@ -34,11 +34,11 @@ test-timeout = 300          # (in seconds) https://os.phil-opp.com/testing/#time
 build-std = ["core", "compiler_builtins"]
 
 [dependencies]
-x86_64 = "0.14"
+x86_64 = "0.14" # TODO: Replace! someday...
 uart_16550 = "0.2"
-cfg-if = "1.0.0"
-bootloader = "0.9.8"
+bootloader = "0.9.8" # TODO: Replace! someday...
 bit_field = "0.10"
+pc-keyboard = "0.6" # TODO: Replace! someday...
 lazy_static = { version = "1", features = ["spin_no_std"] }
 
 [[test]]

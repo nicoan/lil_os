@@ -81,7 +81,9 @@ impl<T> Mutex<T> {
                 // protocol), avoiding all the coordination efforts and not asking for exclusive
                 // access
                 // For more information at hardware level of this check out the MESI protocol
-                while self.locked.load(Ordering::Relaxed) {}
+                while self.locked.load(Ordering::Relaxed) {
+                    core::hint::spin_loop()
+                }
             }
         }
     }
