@@ -1,5 +1,6 @@
 //! Global descriptor table initialization
 use lazy_static::lazy_static;
+use x86_64_custom::gdt::{GDTSelectors, GlobalDescriptorTable};
 
 lazy_static! {
     pub static ref GDT: (GlobalDescriptorTable, GDTSelectors) = {

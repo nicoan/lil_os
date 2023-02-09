@@ -24,6 +24,4 @@ mod descriptor;
 mod table;
 pub(crate) mod tss;
 
-use lazy_static::lazy_static;
-
-pub(crate) use table::{GDTSelectors, GlobalDescriptorTable};
+pub use table::{GDTSelectors, GlobalDescriptorTable};

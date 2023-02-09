@@ -2,12 +2,7 @@
 //!
 //! This module contains a representation of the entire IDT.
 use crate::{
-    address::VirtualMemoryAddress,
-    gdt::tss::DOUBLE_FAULT_IST_INDEX,
-    interrupts::{
-        handlers::{keyboard_interrupt_handler, timer_interrupt_handler},
-        InterruptIndex,
-    },
+    address::VirtualMemoryAddress, gdt::tss::DOUBLE_FAULT_IST_INDEX, interrupts::InterruptIndex,
 };
 
 use super::{
@@ -117,10 +112,6 @@ impl InterruptDescriptorTable {
         self.double_fault
             .set_handler_function(double_fault_handler)
             .set_stack_index(DOUBLE_FAULT_IST_INDEX);
-
-        // Hardware interrupts
-        self[InterruptIndex::Timer.as_usize()].set_handler_function(timer_interrupt_handler);
-        self[InterruptIndex::Keyboard.as_usize()].set_handler_function(keyboard_interrupt_handler);
     }
 }
 

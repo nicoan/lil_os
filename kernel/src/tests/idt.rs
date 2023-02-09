@@ -1,11 +1,11 @@
 #![allow(clippy::empty_loop)]
-use x86_64_custom::idt::{InterruptDescriptorTable, InterruptStackFrame};
-use x86_64_custom::initialize_x86_64_arch;
+use crate::arch::x86_64::initialize_x86_64_arch;
 use crate::serial_print;
 use crate::{
     serial_println,
     tests::{exit_qemu, QemuExitCode},
 };
+use x86_64_custom::idt::{InterruptDescriptorTable, InterruptStackFrame};
 
 /// Tests if an interruption handler triggers.
 ///

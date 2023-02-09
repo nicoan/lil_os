@@ -40,16 +40,3 @@ bootloader = "0.9.8" # TODO: Replace! someday...
 bit_field = "0.10"
 pc-keyboard = "0.6" # TODO: Replace! someday...
 lazy_static = { version = "1", features = ["spin_no_std"] }
-
-[[test]]
-name = "idt_stack_overflow"
-harness = false
-
-[[test]]
-name = "idt_breakpoint_handler"
-harness = false
-
-[[test]]
-name = "idt_divide_by_zero_handler"
-harness = false
-

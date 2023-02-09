@@ -10,8 +10,7 @@
 #[no_mangle]
 #[cfg(not(test))]
 pub extern "C" fn _start() -> ! {
-    use lil_os::x86_64_custom::initialize_x86_64_arch;
-    use lil_os::os_core::messages::init_with_message;
+    use lil_os::{arch::x86_64::initialize_x86_64_arch, os_core::messages::init_with_message};
 
     init_with_message("x86_64 architecture", initialize_x86_64_arch);
 
