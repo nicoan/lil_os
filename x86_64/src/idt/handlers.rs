@@ -50,38 +50,3 @@ impl Display for InterruptStackFrame {
         writeln!(f, "Stack Segment: 0x{:x}", self.stack_segment)
     }
 }
-
-// The x86-interrupt calling convention:
-//
-// Since we don't know when an exception occurs, we can't backup any registers before. This means
-// we can't use a calling convention that relies on caller-saved registers for exception handlers.
-// Instead, we need a calling convention that preserves all registers. The x86-interrupt calling
-// convention is such a calling convention, so it guarantees that all register values are restored
-// to their original values on function return.
-//
-// https://os.phil-opp.com/cpu-exceptions/#the-interrupt-calling-convention
-pub extern "x86-interrupt" fn breakpoint_handler(stack_frame: InterruptStackFrame) {
-    // TODO: Println is from the kernel
-    // println!("Exception BREAKPOINT reached\n {:#?}", stack_frame);
-}
-
-pub extern "x86-interrupt" fn divide_by_zero_handler(stack_frame: InterruptStackFrame) {
-    // TODO: Println is from the kernel
-    // println!("Exception DIVIDED BY ZERO reached\n {:#?}", stack_frame);
-}
-
-pub extern "x86-interrupt" fn double_fault_handler(
-    stack_frame: InterruptStackFrame,
-    error_code: u64,
-) -> ! {
-    // TODO: panic_screen is from the kernel
-    /*
-    panic_screen!(
-        "Exception DOUBLE FAULT reached\n\n{}Error code: {}",
-        stack_frame,
-        error_code
-    );
-    */
-    #[allow(clippy::empty_loop)]
-    loop {}
-}

@@ -10,9 +10,6 @@ use x86_64_custom::interrupts::IBMPcAt8259;
 // it is with the IBM PC/AT 8259 Architecture or with the APIC interface.
 pub static PICS: Mutex<IBMPcAt8259> = Mutex::new(IBMPcAt8259::new());
 
-/// Loads the x86 system tables
-fn load_tables() {}
-
 /// Initializes the x86_64 arch
 pub fn initialize_x86_64_arch() {
     // Initialize system tables

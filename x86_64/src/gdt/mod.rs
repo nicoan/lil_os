@@ -24,4 +24,6 @@ mod descriptor;
 mod table;
 pub(crate) mod tss;
 
+pub use descriptor::Descriptor;
 pub use table::{GDTSelectors, GlobalDescriptorTable};
+pub use tss::{TaskStateSegment, DOUBLE_FAULT_IST_INDEX};

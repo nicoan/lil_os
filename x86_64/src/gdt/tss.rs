@@ -1,14 +1,4 @@
 use crate::address::VirtualMemoryAddress;
-use lazy_static::lazy_static;
-
-// Lazy initialize the TSS
-lazy_static! {
-    pub static ref TSS: TaskStateSegment = {
-        let mut tss = TaskStateSegment::new();
-        tss.init();
-        tss
-    };
-}
 
 /// Index for the double fault interrupt stack. Could be any number from 0 to 7, we chose 0.
 pub const DOUBLE_FAULT_IST_INDEX: usize = 0;

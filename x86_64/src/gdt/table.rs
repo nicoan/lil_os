@@ -6,10 +6,13 @@ use crate::{
     registers::segments::{SegmentSelector, CS},
 };
 
-use super::{descriptor::Descriptor, tss::TSS};
+use super::descriptor::Descriptor;
 
 const MAX_LENGTH: usize = 8;
-const ERROR_GDT_FULL: &str = "GDT is full. Tried to push a new value into it.";
+
+pub enum GdtError {
+    TableIsFull,
+}
 
 pub struct GDTSelectors {
     pub cs: SegmentSelector,
@@ -46,12 +49,11 @@ impl GlobalDescriptorTable {
     ///
     /// # Arguments
     /// * `entry` - A segment descriptor that will be added to the GDT.
-    pub fn add_entry(&mut self, entry: Descriptor) -> SegmentSelector {
+    pub fn add_entry(&mut self, entry: Descriptor) -> Result<SegmentSelector, GdtError> {
         let index = match entry {
             Descriptor::UserSegment(us) => {
                 if self.len == MAX_LENGTH {
-                    // TODO: panic_screen is from kernel, maybe we should return a result here
-                    // panic_screen!("{}\n{:?}", ERROR_GDT_FULL, self);
+                    return Err(GdtError::TableIsFull);
                 }
 
                 self.table[self.len] = us;
@@ -60,8 +62,7 @@ impl GlobalDescriptorTable {
             }
             Descriptor::SystemSegment(low, high) => {
                 if self.len == MAX_LENGTH - 1 {
-                    // TODO: panic_screen is from kernel, maybe we should return a result here
-                    // panic_screen!("{}\n{:?}", ERROR_GDT_FULL, self);
+                    return Err(GdtError::TableIsFull);
                 }
 
                 self.table[self.len] = low;
@@ -72,23 +73,7 @@ impl GlobalDescriptorTable {
         };
 
         // TODO: At the moment we only use Ring0 but this must change
-        SegmentSelector::new(index as u16, PrivilegeLevel::Ring0)
-    }
-
-    /// Initializes the GDT.
-    ///
-    /// Sets up all the descriptors.
-    pub fn init(&mut self) -> GDTSelectors {
-        let kernel_code_segment_selector = self.add_entry(Descriptor::kernel_code_segment());
-        self.add_entry(Descriptor::kernel_data_segment());
-        self.add_entry(Descriptor::user_code_segment());
-        self.add_entry(Descriptor::user_data_segment());
-        let tss_selector = self.add_entry(Descriptor::task_state_segment(&TSS));
-
-        GDTSelectors {
-            cs: kernel_code_segment_selector,
-            tss: tss_selector,
-        }
+        Ok(SegmentSelector::new(index as u16, PrivilegeLevel::Ring0))
     }
 
     /// Updates the processor's segment registers.

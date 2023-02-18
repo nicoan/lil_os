@@ -9,5 +9,3 @@ mod table;
 
 pub use handlers::InterruptStackFrame;
 pub use table::InterruptDescriptorTable;
-
-use lazy_static::lazy_static;

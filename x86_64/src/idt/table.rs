@@ -1,15 +1,12 @@
 //! Interrupt Description Table for x86_64
 //!
 //! This module contains a representation of the entire IDT.
-use crate::{
-    address::VirtualMemoryAddress, gdt::tss::DOUBLE_FAULT_IST_INDEX, interrupts::InterruptIndex,
-};
+use crate::address::VirtualMemoryAddress;
 
 use super::{
     entry::Entry,
     handlers::{
-        breakpoint_handler, divide_by_zero_handler, double_fault_handler, HandlerFunc,
-        HandlerFuncWithErrCode, HandlerFuncWithErrCodeDiverging, PageFaultHandlerFunc,
+        HandlerFunc, HandlerFuncWithErrCode, HandlerFuncWithErrCodeDiverging, PageFaultHandlerFunc,
     },
 };
 use core::{
@@ -100,18 +97,6 @@ impl InterruptDescriptorTable {
         };
 
         unsafe { asm!("lidt [{}]", in(reg) &pointer, options(readonly, nostack, preserves_flags)) }
-    }
-
-    /// Initializes the IDT.
-    ///
-    /// Sets up all the handler functions.
-    pub fn init(&mut self) {
-        self.breakpoint.set_handler_function(breakpoint_handler);
-        self.divide_by_zero
-            .set_handler_function(divide_by_zero_handler);
-        self.double_fault
-            .set_handler_function(double_fault_handler)
-            .set_stack_index(DOUBLE_FAULT_IST_INDEX);
     }
 }
 
