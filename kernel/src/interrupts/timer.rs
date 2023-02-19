@@ -1,5 +1,5 @@
-use crate::print;
+// use crate::print;
 
 pub fn handler() {
-    print!(".");
+    // print!(".");
 }

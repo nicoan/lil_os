@@ -6,13 +6,21 @@
 #![test_runner(lil_os::tests::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+// use x86_64::registers::control::Cr3;
+use bootloader::BootInfo;
+use x86_64_custom::registers::control::Cr3;
+
 /// Entrypoint of our OS
 #[no_mangle]
 #[cfg(not(test))]
-pub extern "C" fn _start() -> ! {
-    use lil_os::{arch::x86_64::initialize_x86_64_arch, os_core::messages::init_with_message};
+pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
+    use lil_os::{
+        arch::x86_64::initialize_x86_64_arch, os_core::messages::init_with_message, println,
+    };
 
     init_with_message("x86_64 architecture", initialize_x86_64_arch);
+    println!("{:#?}", boot_info);
+    println!("{:?}", Cr3::read());
 
     #[allow(clippy::empty_loop)]
     loop {

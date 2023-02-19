@@ -1,5 +1,4 @@
 //! This module contains architecture agnostic interruptor handlers
-
 mod keyboard;
 mod timer;
 
