@@ -15,12 +15,22 @@ use x86_64_custom::registers::control::Cr3;
 #[cfg(not(test))]
 pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
     use lil_os::{
-        arch::x86_64::initialize_x86_64_arch, os_core::messages::init_with_message, println,
+        arch::x86_64::initialize_x86_64_arch,
+        os_core::{memory::paging::get_active_lvl4_page_table, messages::init_with_message},
+        println,
     };
+    use x86_64_custom::address::VirtualMemoryAddress;
 
     init_with_message("x86_64 architecture", initialize_x86_64_arch);
-    println!("{:#?}", boot_info);
-    println!("{:?}", Cr3::read());
+
+    let phys_mem_offset = VirtualMemoryAddress::new(boot_info.physical_memory_offset);
+    let l4_table = unsafe { get_active_lvl4_page_table(phys_mem_offset) };
+
+    for (i, entry) in l4_table.iter().enumerate() {
+        if entry.is_used() {
+            println!("L4 Entry {}: {:?}", i, entry);
+        }
+    }
 
     #[allow(clippy::empty_loop)]
     loop {

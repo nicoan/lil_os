@@ -1,5 +1,5 @@
 use core::fmt::Debug;
-use core::ops::Deref;
+use core::ops::{Add, Deref};
 
 /// Represents a physical memory address
 ///
@@ -35,6 +35,25 @@ impl VirtualMemoryAddress {
 
     pub const fn new(address: u64) -> Self {
         Self(address)
+    }
+
+    pub fn as_u64(&self) -> u64 {
+        self.0
+    }
+
+    pub fn as_mut_ptr<T>(&self) -> *mut T {
+        self.as_u64() as *mut T
+    }
+}
+
+/// We overload the '+' to be able to add a Physycal Address to a Virtual Address to create a new
+/// Virtual Address. This is useful in paging when adding a Physical Address the Virtual Adress
+/// Offset to use in the level 4 page tables.
+impl Add<PhysicalMemoryAddress> for VirtualMemoryAddress {
+    type Output = Self;
+
+    fn add(self, rhs: PhysicalMemoryAddress) -> Self::Output {
+        Self(self.0 + rhs.0)
     }
 }
 

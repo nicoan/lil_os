@@ -14,3 +14,4 @@ pub mod idt;
 pub mod interrupts;
 pub mod privilege;
 pub mod registers;
+pub mod structures;
