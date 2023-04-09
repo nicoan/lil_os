@@ -24,6 +24,18 @@ impl Debug for PhysicalMemoryAddress {
 }
 
 /// Represents a virtual memory address
+///
+/// A virtual memory address is divided in five parts:
+///
+/// bits   63 .. 48  |  47 .. 39  |  38 .. 30  |  29 .. 21  |  20 .. 12  |  11 .. 0
+///         16 bits      9 bits       9 bits       9 bits       9 bits      12 bits
+///         not used   page table    page table   page table   page table   page offset
+///                    lvl 4 index   lvl 3 index  lvl 2 index  lvl 1 index
+///
+/// The ranges in the tables are all included. Since bits 63 .. 48 are discarded, this means that
+/// in reality we have 48 bits addresses. Even though bits 48 to 64 are discarded, they can’t be
+/// set to arbitrary values. Instead, all bits in this range have to be copies of bit 47 in order
+/// to keep addresses unique and allow future extensions like the 5-level page table.
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug)]
 pub struct VirtualMemoryAddress(u64);
@@ -33,6 +45,7 @@ impl VirtualMemoryAddress {
         Self(0)
     }
 
+    // TODO: Create canonical virtual addresses here
     pub const fn new(address: u64) -> Self {
         Self(address)
     }

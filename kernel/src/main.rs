@@ -28,7 +28,7 @@ pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
 
     for (i, entry) in l4_table.iter().enumerate() {
         if entry.is_used() {
-            println!("L4 Entry {}: {:?}", i, entry);
+            println!("L4 Entry {}: {}", i, entry);
         }
     }
 
