@@ -6,9 +6,7 @@
 #![test_runner(lil_os::tests::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
-// use x86_64::registers::control::Cr3;
 use bootloader::BootInfo;
-use x86_64_custom::registers::control::Cr3;
 
 /// Entrypoint of our OS
 #[no_mangle]
@@ -16,7 +14,7 @@ use x86_64_custom::registers::control::Cr3;
 pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
     use lil_os::{
         arch::x86_64::initialize_x86_64_arch,
-        os_core::{memory::paging::get_active_lvl4_page_table, messages::init_with_message},
+        os_core::{memory::paging::translate_address, messages::init_with_message},
         println,
     };
     use x86_64_custom::address::VirtualMemoryAddress;
@@ -24,14 +22,13 @@ pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
     init_with_message("x86_64 architecture", initialize_x86_64_arch);
 
     let phys_mem_offset = VirtualMemoryAddress::new(boot_info.physical_memory_offset);
-    let l4_table = unsafe { get_active_lvl4_page_table(phys_mem_offset) };
 
-    for (i, entry) in l4_table.iter().enumerate() {
-        if entry.is_used() {
-            println!("L4 Entry {}: {}", i, entry);
-        }
+    unsafe {
+        println!(
+            "Translated address: {:?}",
+            translate_address(VirtualMemoryAddress::new(0xb8000), phys_mem_offset)
+        );
     }
-
     #[allow(clippy::empty_loop)]
     loop {
         // Halts the CPU until the next interrupt hits. This prevents the CPU to spin endessly

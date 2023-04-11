@@ -1,6 +1,6 @@
 //! TODO: Write about the paging solution chosen: Mapping the complete physycal memory in the
 //! virtual space with an offset.
-use x86_64_custom::address::{PhysicalMemoryAddress, VirtualMemoryAddress};
+use x86_64_custom::address::{PageTableLevel, PhysicalMemoryAddress, VirtualMemoryAddress};
 use x86_64_custom::registers::control::Cr3;
 use x86_64_custom::structures::paging::PageTable;
 
@@ -31,9 +31,32 @@ pub unsafe fn get_active_lvl4_page_table(
 ///
 /// This function performs the translation going through all four page tables until it reaches the
 /// physical address
-pub fn translate_address(
+pub unsafe fn translate_address(
     address: VirtualMemoryAddress,
     physical_memory_offset: VirtualMemoryAddress,
 ) -> Option<PhysicalMemoryAddress> {
-    todo!()
+    let tables_indexes = [
+        address.get_page_table_index(PageTableLevel::Level4),
+        address.get_page_table_index(PageTableLevel::Level3),
+        address.get_page_table_index(PageTableLevel::Level2),
+        address.get_page_table_index(PageTableLevel::Level1),
+    ];
+
+    let mut next_page_table_physical_address = Cr3::read();
+    // Go through all the page tables until we reach the last one
+    for table_index in tables_indexes {
+        // Get the next level page table virtual address from the physical address plus the offset.
+        let next_page_table_virtual_address =
+            physical_memory_offset + next_page_table_physical_address;
+        let next_table: &PageTable = &*next_page_table_virtual_address.as_mut_ptr();
+
+        // Get the physical address from the next page table we are going to process
+        next_page_table_physical_address = next_table[table_index].address();
+    }
+
+    // Once we reach the level 1, in next_page_table_physical_address we have the actual frame
+    // address. To get the actual address we need to add the offset from the virtual address.
+    Some(PhysicalMemoryAddress::new(
+        next_page_table_physical_address.0 + address.get_page_offset() as u64,
+    ))
 }
