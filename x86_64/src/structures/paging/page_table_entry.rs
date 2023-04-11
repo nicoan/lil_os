@@ -4,24 +4,26 @@ use core::ops::Deref;
 use crate::address::PhysicalMemoryAddress;
 
 /// A page table entry
+///
+/// A page entry contains the a physical memory address address (bits 52..12) and flags
+/// https://wiki.osdev.org/images/4/41/64-bit_page_tables1.png
+/// https://wiki.osdev.org/Paging
 #[repr(transparent)]
 #[derive(Debug)]
 pub struct PageTableEntry(u64);
 
-/// TODO:
-/// Document with this:
-/// https://wiki.osdev.org/images/4/41/64-bit_page_tables1.png
-/// https://wiki.osdev.org/Paging
 impl PageTableEntry {
     /// Checks if this entry is a used entry
     pub fn is_used(&self) -> bool {
         self.0 != 0
     }
 
+    /// Returns if this entry is present in the table
     pub fn is_present(&self) -> bool {
         self.0 & 0x1 == 1
     }
 
+    /// Returns if this entry is writable
     pub fn is_writable(&self) -> bool {
         self.0 & 0x2 >> 1 == 1
     }

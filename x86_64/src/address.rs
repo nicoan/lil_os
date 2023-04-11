@@ -91,7 +91,12 @@ impl VirtualMemoryAddress {
         self.as_u64() as *mut T
     }
 
-    // TODO: Add description
+    /// Returns page table index
+    ///
+    /// Returns the selected level page table index.
+    ///
+    /// # Arguments
+    ///  * `page_table_level`: The page table level we want to retrieve the index.
     pub fn get_page_table_index(&self, page_table_level: PageTableLevel) -> usize {
         // First we remove the uneeded rightmost bits depending on the level
         let index = match page_table_level {
@@ -105,6 +110,10 @@ impl VirtualMemoryAddress {
         (index as u16 & 0x1ff).into()
     }
 
+    /// Returns the page table offset.
+    ///
+    /// This offset is added to the phyisical frame address to obtain the physical address in the
+    /// translation process of a virtual address
     pub fn get_page_offset(&self) -> u16 {
         self.0 as u16 & 0x0fff
     }
