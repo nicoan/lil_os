@@ -1,3 +1,7 @@
+//! Page Table entry structure
+//!
+//! Flags comments taken from
+//! https://docs.rs/x86_64/latest/src/x86_64/structures/paging/page_table.rs.html
 use core::fmt::Display;
 use core::ops::Deref;
 
@@ -13,6 +17,45 @@ use crate::address::PhysicalMemoryAddress;
 pub struct PageTableEntry(u64);
 
 impl PageTableEntry {
+    /// Specifies if the mapped frame or page table is loaded memory
+    const PRESENT: u64 = 1 << 1;
+
+    /// Controls whether writes to the mapped frames are allowed.
+    ///
+    /// If this bit is unset in a level 1 page table entry, the mapped frame is read-only.
+    /// If this bit is unset in a higher level page table entry the complete range of mapped
+    const WRITABLE: u64 = 1 << 1;
+
+    /// Controls whether accesses from userspace (i.e. ring 3) are permitted.
+    const USER_ACCESSIBLE: u64 = 1 << 2;
+
+    /// If this bit is set, a “write-through” policy is used for the cache, else a “write-back”
+    /// policy is used.
+    const WRITE_THROUGH: u64 = 1 << 3;
+
+    /// Disables caching for the pointed entry is cacheable.
+    const NO_CACHE: u64 = 1 << 4;
+
+    /// Set by the CPU when the mapped frame or page table is accessed.
+    const ACCESSED: u64 = 1 << 5;
+
+    /// Set by the CPU on a write to the mapped frame.
+    const DIRTY: u64 = 1 << 6;
+
+    /// Specifies that the entry maps a huge frame instead of a page table. Only allowed in
+    /// P2 or P3 tables.
+    const HUGE_PAGE: u64 = 1 << 7;
+
+    /// Indicates that the mapping is present in all address spaces, so it isn't flushed from
+    /// the TLB on an address space switch.
+    const GLOBAL: u64 = 1 << 8;
+
+    /// Forbid code execution from the mapped frames.
+    ///
+    /// Can be only used when the no-execute page protection feature is enabled in the EFER
+    /// register.
+    const NO_EXECUTE: u64 = 1 << 63;
+
     /// Checks if this entry is a used entry
     pub fn is_used(&self) -> bool {
         self.0 != 0
@@ -20,18 +63,18 @@ impl PageTableEntry {
 
     /// Returns if this entry is present in the table
     pub fn is_present(&self) -> bool {
-        self.0 & 0x1 == 1
+        self.0 & Self::PRESENT > 0
     }
 
-    /// Returns if this entry is writable
-    pub fn is_writable(&self) -> bool {
-        self.0 & 0x2 >> 1 == 1
+    /// Returns if this entry is present in the table
+    pub fn is_huge(&self) -> bool {
+        self.0 & Self::HUGE_PAGE > 0
     }
 
-    /// Returns the physical address pointed by this page table entry.
+    /// Returns the physical frame pointed by this page table entry.
     ///
     /// The physical address is contained between bits 52..12.
-    pub fn address(&self) -> PhysicalMemoryAddress {
+    pub fn frame(&self) -> PhysicalMemoryAddress {
         PhysicalMemoryAddress(self.0 & 0x000f_ffff_ffff_f000)
     }
 }
@@ -48,10 +91,9 @@ impl Display for PageTableEntry {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(
             f,
-            "PageTableEntry - Physical Address: {:?}. Present: {} - Writable: {}",
-            self.address(),
+            "PageTableEntry - Physical Address: {:?}. Present: {}",
+            self.frame(),
             self.is_present(),
-            self.is_writable()
         )
     }
 }

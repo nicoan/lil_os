@@ -7,15 +7,14 @@
 #![reexport_test_harness_main = "test_main"]
 
 use bootloader::BootInfo;
+use x86_64_custom::structures::paging::translate_address;
 
 /// Entrypoint of our OS
 #[no_mangle]
 #[cfg(not(test))]
 pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
     use lil_os::{
-        arch::x86_64::initialize_x86_64_arch,
-        os_core::{memory::paging::translate_address, messages::init_with_message},
-        println,
+        arch::x86_64::initialize_x86_64_arch, os_core::messages::init_with_message, println,
     };
     use x86_64_custom::address::VirtualMemoryAddress;
 
@@ -23,12 +22,19 @@ pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
 
     let phys_mem_offset = VirtualMemoryAddress::new(boot_info.physical_memory_offset);
 
-    unsafe {
-        println!(
-            "Translated address: {:?}",
-            translate_address(VirtualMemoryAddress::new(0xb8000), phys_mem_offset)
-        );
-    }
+    println!(
+        "Translated address: {:?}",
+        translate_address(VirtualMemoryAddress::new(0xb8000), phys_mem_offset)
+    );
+
+    println!(
+        "Translated address: {:?}",
+        translate_address(
+            VirtualMemoryAddress::new(boot_info.physical_memory_offset),
+            phys_mem_offset
+        )
+    );
+
     #[allow(clippy::empty_loop)]
     loop {
         // Halts the CPU until the next interrupt hits. This prevents the CPU to spin endessly
