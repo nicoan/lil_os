@@ -12,6 +12,6 @@ pub mod address;
 pub mod gdt;
 pub mod idt;
 pub mod interrupts;
+pub mod paging;
 pub mod privilege;
 pub mod registers;
-pub mod structures;

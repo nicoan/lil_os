@@ -1,14 +1,21 @@
 mod page_table;
 mod page_table_entry;
+mod translator;
 
 pub use page_table::PageTable;
 pub use page_table_entry::PageTableEntry;
+pub use translator::Translator;
 
 use crate::{
     address::{PageTableLevel, PhysicalMemoryAddress, VirtualMemoryAddress},
     registers::control::Cr3,
 };
 
+// https://docs.rs/x86_64/latest/src/x86_64/structures/paging/mapper/mapped_page_table.rs.html#530
+// https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2003/cc736309(v=ws.10)?redirectedfrom=MSDN
+// https://wiki.osdev.org/Physical_Address_Extension
+// https://www.iaik.tugraz.at/teaching/materials/os/tutorials/paging-on-intel-x86-64/
+// https://medium.com/@geri.bod/pae-paging-memory-mapping-on-x86-8e8ba0879c5
 // TODO: Translate huge pages
 /// Translates a virtual address into a physical address.
 ///
@@ -37,7 +44,7 @@ pub unsafe fn translate_address(
         let next_table: &PageTable = &*next_page_table_virtual_address.as_mut_ptr();
 
         // Get the physical address from the next page table we are going to process
-        next_page_table_physical_address = next_table[table_index].frame();
+        next_page_table_physical_address = next_table[table_index].address();
     }
 
     // Once we reach the level 1, in next_page_table_physical_address we have the actual frame

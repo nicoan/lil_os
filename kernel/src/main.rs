@@ -7,34 +7,30 @@
 #![reexport_test_harness_main = "test_main"]
 
 use bootloader::BootInfo;
-use x86_64_custom::structures::paging::translate_address;
 
 /// Entrypoint of our OS
 #[no_mangle]
 #[cfg(not(test))]
 pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
+    use lil_os::arch::x86_64::TRANSLATOR;
     use lil_os::{
         arch::x86_64::initialize_x86_64_arch, os_core::messages::init_with_message, println,
     };
     use x86_64_custom::address::VirtualMemoryAddress;
 
-    init_with_message("x86_64 architecture", initialize_x86_64_arch);
+    let physical_memory_offset = VirtualMemoryAddress::new(boot_info.physical_memory_offset);
 
-    let phys_mem_offset = VirtualMemoryAddress::new(boot_info.physical_memory_offset);
+    init_with_message("x86_64 architecture", || {
+        initialize_x86_64_arch(physical_memory_offset)
+    });
 
-    println!(
-        "Translated address: {:?}",
-        translate_address(VirtualMemoryAddress::new(0xb8000), phys_mem_offset)
-    );
+    println!("Translated address: {:?}", unsafe {
+        TRANSLATOR.translate_address(VirtualMemoryAddress::new(0xb8000))
+    });
 
-    println!(
-        "Translated address: {:?}",
-        translate_address(
-            VirtualMemoryAddress::new(boot_info.physical_memory_offset),
-            phys_mem_offset
-        )
-    );
-
+    println!("Translated address: {:?}", unsafe {
+        TRANSLATOR.translate_address(VirtualMemoryAddress::new(boot_info.physical_memory_offset))
+    });
     #[allow(clippy::empty_loop)]
     loop {
         // Halts the CPU until the next interrupt hits. This prevents the CPU to spin endessly

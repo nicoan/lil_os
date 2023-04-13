@@ -10,7 +10,6 @@ use crate::address::PhysicalMemoryAddress;
 /// A page table entry
 ///
 /// A page entry contains the a physical memory address address (bits 52..12) and flags
-/// https://wiki.osdev.org/images/4/41/64-bit_page_tables1.png
 /// https://wiki.osdev.org/Paging
 #[repr(transparent)]
 #[derive(Debug)]
@@ -74,7 +73,7 @@ impl PageTableEntry {
     /// Returns the physical frame pointed by this page table entry.
     ///
     /// The physical address is contained between bits 52..12.
-    pub fn frame(&self) -> PhysicalMemoryAddress {
+    pub fn address(&self) -> PhysicalMemoryAddress {
         PhysicalMemoryAddress(self.0 & 0x000f_ffff_ffff_f000)
     }
 }
@@ -92,7 +91,7 @@ impl Display for PageTableEntry {
         write!(
             f,
             "PageTableEntry - Physical Address: {:?}. Present: {}",
-            self.frame(),
+            self.address(),
             self.is_present(),
         )
     }
