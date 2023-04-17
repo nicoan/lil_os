@@ -4,7 +4,7 @@ mod idt;
 mod interrupts;
 mod paging;
 
-use crate::os_core::synchronization::spinlock::Mutex;
+use crate::synchronization::spinlock::Mutex;
 use x86_64_custom::address::VirtualMemoryAddress;
 use x86_64_custom::interrupts::IBMPcAt8259;
 use x86_64_custom::paging::Translator;

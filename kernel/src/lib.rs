@@ -16,7 +16,9 @@ extern crate alloc;
 pub mod arch;
 pub mod drivers;
 pub mod interrupts;
+pub mod memory;
 pub mod os_core;
+pub mod synchronization;
 pub mod tests;
 
 // "Global scope" exports

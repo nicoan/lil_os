@@ -54,13 +54,13 @@ impl Translator {
                 // have a 1GB page mapped to phisical memory. In this case bits 30 to 1 are used as
                 // offset
                 let offset = if transversed_level == 2 {
-                    address.as_u64() & 0x3fffffff;
+                    address.as_u64() & 0x3fffffff
                 }
                 // If we transversed two levels we are in the level 2 page table, meaning that we
                 // have a 2MB page mapped to phisical memory. In this case bits 21 to 1 are used as
                 // offset
                 else if transversed_level == 3 {
-                    address.as_u64() & 0x1fffff;
+                    address.as_u64() & 0x1fffff
                 } else {
                     // TODO: Return a result and remove this panic!
                     panic!(
@@ -68,8 +68,9 @@ impl Translator {
                         4 - transversed_level
                     );
                 };
+
                 return Some(PhysicalMemoryAddress::new(
-                    next_page_table_physical_address.0 + address.get_page_offset() as u64,
+                    next_page_table_physical_address.0 + offset as u64,
                 ));
             }
         }

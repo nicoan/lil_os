@@ -1,4 +1,4 @@
-use crate::os_core::synchronization::spinlock::Mutex;
+use crate::synchronization::spinlock::Mutex;
 use lazy_static::lazy_static;
 use uart_16550::SerialPort;
 use x86_64::instructions::interrupts::without_interrupts;

@@ -1,5 +1,5 @@
 use crate::interrupts::{keyboard_handler, timer_handler};
-use crate::os_core::synchronization::spinlock::Mutex;
+use crate::synchronization::spinlock::Mutex;
 use x86_64_custom::interrupts::InterruptIndex;
 use x86_64_custom::{create_interrupt_handler, interrupts::IBMPcAt8259};
 
