@@ -3,6 +3,9 @@ use core::ops::{Index, IndexMut};
 
 const PAGE_TABLE_SIZE: usize = 512;
 
+/// Represents a page table.
+///
+/// This is just a wrapper type that contains an array of page table entries.
 #[repr(C)]
 pub struct PageTable([PageTableEntry; PAGE_TABLE_SIZE]);
 

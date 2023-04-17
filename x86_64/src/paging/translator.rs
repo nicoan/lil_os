@@ -1,10 +1,38 @@
+//! Virtual Memory Address translator.
+//!
+//! This module provides the `Translator` struct that supplies a method to translate a virtual
+//! memory address into the physical memory address.
+//!
+//! To not clutter the virtual address space with page tables and prevent having a fragmentation
+//! problem also in the virtual address space we use an offset (`physical_memory_offset`) to assign
+//! all the *virtual* addresses that corresponds to a page table to the virtual address space
+//! region that starts at that offset.
+//!
+//! This means all virtual addresses that correspond to a page table (of any level) are located in
+//! that region of the virtual address space.
+//!
+//! The page tables virtual addresses are identity mapped to the physical frame that contains the
+//! actual table plus the offset (`physical_memory_offset`) This means that:
+//! - The virtual address and the physical address for a page table are the same if we substract
+//! the offset.
+//! - The virtual address for a page table is calculated as the address of its physical frame plus
+//! the offset.
+//!
+//! If we already know the physical frame address of the page tables, why not access it directly?
+//! Because when paging is active, all address are interpreted as virtual address by the CPU.
+//! That's why when we need to acceess a page table we need to calculate its virtual address.
+//!
+//! For more information:
+//! https://os.phil-opp.com/paging-implementation/#identity-mapping
 use crate::{
     address::{PageTableLevel, PhysicalMemoryAddress, VirtualMemoryAddress},
     paging::PageTable,
     registers::control::Cr3,
 };
 
+/// Provides a virtual memory.
 pub struct Translator {
+    /// This is the virtual memory offset where the page tables are allocated.
     physical_memory_offset: VirtualMemoryAddress,
 }
 
@@ -15,6 +43,13 @@ impl Translator {
         }
     }
 
+    /// Translates a virtual address into a physical address.
+    ///
+    /// This function performs the translation going through all four page tables until it reaches the
+    /// physical address
+    ///
+    /// # Safety
+    /// Caller must be sure that the virtual address can be mapped to a physical frame.
     pub unsafe fn translate_address(
         &self,
         address: VirtualMemoryAddress,
@@ -70,7 +105,7 @@ impl Translator {
                 };
 
                 return Some(PhysicalMemoryAddress::new(
-                    next_page_table_physical_address.0 + offset as u64,
+                    next_page_table_physical_address.0 + offset,
                 ));
             }
         }
