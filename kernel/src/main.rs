@@ -16,7 +16,7 @@ pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
     use lil_os::{
         arch::x86_64::initialize_x86_64_arch, os_core::messages::init_with_message, println,
     };
-    use x86_64_custom::address::VirtualMemoryAddress;
+    use x86_64_custom::memory::address::VirtualMemoryAddress;
 
     let physical_memory_offset = VirtualMemoryAddress::new(boot_info.physical_memory_offset);
 

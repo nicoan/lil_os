@@ -1,7 +1,7 @@
 //! Interrupt Description Table for x86_64
 //!
 //! This module contains a representation of the entire IDT.
-use crate::address::VirtualMemoryAddress;
+use crate::memory::address::VirtualMemoryAddress;
 
 use super::{
     entry::Entry,

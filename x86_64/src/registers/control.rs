@@ -1,7 +1,7 @@
 //! Abstractions for control registers
 use core::arch::asm;
 
-use crate::address::PhysicalMemoryAddress;
+use crate::memory::address::PhysicalMemoryAddress;
 
 /// The CR3 register contains the phisical address of the PML4 (Page Map Level 4, also known as
 /// PDT - Page Directory Table).

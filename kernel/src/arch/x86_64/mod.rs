@@ -5,9 +5,9 @@ mod interrupts;
 mod paging;
 
 use crate::synchronization::spinlock::Mutex;
-use x86_64_custom::address::VirtualMemoryAddress;
 use x86_64_custom::interrupts::IBMPcAt8259;
-use x86_64_custom::paging::Translator;
+use x86_64_custom::memory::address::VirtualMemoryAddress;
+use x86_64_custom::memory::Translator;
 
 pub use paging::TRANSLATOR;
 // TODO The idea here is to define a trait that abstacts away the interruption habdling either if

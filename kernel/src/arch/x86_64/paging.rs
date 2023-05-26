@@ -1,4 +1,3 @@
-use x86_64_custom::address::VirtualMemoryAddress;
-use x86_64_custom::paging::Translator;
+use x86_64_custom::memory::{address::VirtualMemoryAddress, Translator};
 
 pub static mut TRANSLATOR: Translator = Translator::new(VirtualMemoryAddress::zero());

@@ -1,5 +1,10 @@
-use super::PageTableEntry;
+mod page_table_entry;
+mod page_table_level;
+
 use core::ops::{Index, IndexMut};
+
+pub use page_table_entry::PageTableEntry;
+pub use page_table_level::PageTableLevel;
 
 const PAGE_TABLE_SIZE: usize = 512;
 

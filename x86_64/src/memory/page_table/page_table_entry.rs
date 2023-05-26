@@ -5,17 +5,11 @@
 use core::fmt::Display;
 use core::ops::Deref;
 
-use crate::address::PhysicalMemoryAddress;
+use crate::memory::address::PhysicalMemoryAddress;
 
-/// A page table entry
-///
-/// A page entry contains the a physical memory address address (bits 52..12) and flags
-/// https://wiki.osdev.org/Paging
-#[repr(transparent)]
-#[derive(Debug)]
-pub struct PageTableEntry(u64);
+pub struct PageTableEntryFlags;
 
-impl PageTableEntry {
+impl PageTableEntryFlags {
     /// Specifies if the mapped frame or page table is loaded memory
     const PRESENT: u64 = 1 << 1;
 
@@ -54,7 +48,17 @@ impl PageTableEntry {
     /// Can be only used when the no-execute page protection feature is enabled in the EFER
     /// register.
     const NO_EXECUTE: u64 = 1 << 63;
+}
 
+/// A page table entry
+///
+/// A page entry contains the a physical memory address address (bits 52..12) and flags
+/// https://wiki.osdev.org/Paging
+#[repr(transparent)]
+#[derive(Debug)]
+pub struct PageTableEntry(u64);
+
+impl PageTableEntry {
     /// Checks if this entry is a used entry
     pub fn is_used(&self) -> bool {
         self.0 != 0
@@ -62,12 +66,12 @@ impl PageTableEntry {
 
     /// Returns if this entry is present in the table
     pub fn is_present(&self) -> bool {
-        self.0 & Self::PRESENT > 0
+        self.0 & PageTableEntryFlags::PRESENT > 0
     }
 
     /// Returns if this entry is present in the table
     pub fn is_huge(&self) -> bool {
-        self.0 & Self::HUGE_PAGE > 0
+        self.0 & PageTableEntryFlags::HUGE_PAGE > 0
     }
 
     /// Returns the physical frame pointed by this page table entry.

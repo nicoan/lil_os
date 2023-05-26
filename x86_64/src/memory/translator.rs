@@ -25,8 +25,8 @@
 //! For more information:
 //! https://os.phil-opp.com/paging-implementation/#identity-mapping
 use crate::{
-    address::{PageTableLevel, PhysicalMemoryAddress, VirtualMemoryAddress},
-    paging::PageTable,
+    memory::address::{PhysicalMemoryAddress, VirtualMemoryAddress},
+    memory::page_table::{PageTable, PageTableLevel},
     registers::control::Cr3,
 };
 

@@ -1,4 +1,4 @@
-use crate::address::VirtualMemoryAddress;
+use crate::memory::address::VirtualMemoryAddress;
 
 /// Index for the double fault interrupt stack. Could be any number from 0 to 7, we chose 0.
 pub const DOUBLE_FAULT_IST_INDEX: usize = 0;

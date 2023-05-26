@@ -5,8 +5,8 @@ use crate::{
     serial_println,
     tests::{exit_qemu, QemuExitCode},
 };
-use x86_64_custom::address::VirtualMemoryAddress;
 use x86_64_custom::idt::{InterruptDescriptorTable, InterruptStackFrame};
+use x86_64_custom::memory::address::VirtualMemoryAddress;
 
 /// Tests if an interruption handler triggers.
 ///

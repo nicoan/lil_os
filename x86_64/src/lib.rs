@@ -8,10 +8,9 @@
 // Enable x86 interrupt ABI
 #![feature(abi_x86_interrupt)]
 
-pub mod address;
 pub mod gdt;
 pub mod idt;
 pub mod interrupts;
-pub mod paging;
+pub mod memory;
 pub mod privilege;
 pub mod registers;

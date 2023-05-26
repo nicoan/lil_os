@@ -1,7 +1,7 @@
+use crate::memory::address::VirtualMemoryAddress;
 use core::arch::asm;
 
 use crate::{
-    address::VirtualMemoryAddress,
     privilege::PrivilegeLevel,
     registers::segments::{SegmentSelector, CS},
 };
