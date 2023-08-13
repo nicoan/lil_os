@@ -86,6 +86,8 @@ macro_rules! panic_screen {
             Some($crate::drivers::screen::text::PrintColor::Blue)
         );
         $crate::print!("{}\n", format_args!($($arg)*));
+        #[allow(clippy::empty_loop)]
+        loop {}
     }
 }
 

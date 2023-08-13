@@ -1,5 +1,4 @@
 //! This module contains the implementation for the kernel's memory heap allocator
-
 use alloc::alloc::GlobalAlloc;
 
 #[global_allocator]

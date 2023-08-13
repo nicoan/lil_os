@@ -1,5 +1,4 @@
 use core::fmt::Debug;
-use core::ops::{Add, Deref};
 
 /// Represents a physical memory address
 ///

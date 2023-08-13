@@ -1,5 +1,5 @@
 use crate::memory::address::PhysicalMemoryAddress;
-use crate::memory::page_table::PageTableLevel;
+use crate::memory::paging::page_table::PageTableLevel;
 use core::fmt::Debug;
 use core::ops::{Add, Deref};
 
