@@ -1,4 +1,5 @@
 use core::fmt::Debug;
+use core::ops::Deref;
 
 /// Represents a physical memory address
 ///
@@ -24,5 +25,13 @@ impl PhysicalMemoryAddress {
 impl Debug for PhysicalMemoryAddress {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "PhysicalMemoryAddress(0x{:x})", &self.0)
+    }
+}
+
+impl Deref for PhysicalMemoryAddress {
+    type Target = u64;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }

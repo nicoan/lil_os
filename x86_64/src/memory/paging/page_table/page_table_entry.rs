@@ -11,43 +11,43 @@ pub struct PageTableEntryFlags;
 
 impl PageTableEntryFlags {
     /// Specifies if the mapped frame or page table is loaded memory
-    const PRESENT: u64 = 1 << 1;
+    pub const PRESENT: u64 = 1 << 1;
 
     /// Controls whether writes to the mapped frames are allowed.
     ///
     /// If this bit is unset in a level 1 page table entry, the mapped frame is read-only.
     /// If this bit is unset in a higher level page table entry the complete range of mapped
-    const WRITABLE: u64 = 1 << 1;
+    pub const WRITABLE: u64 = 1 << 1;
 
     /// Controls whether accesses from userspace (i.e. ring 3) are permitted.
-    const USER_ACCESSIBLE: u64 = 1 << 2;
+    pub const USER_ACCESSIBLE: u64 = 1 << 2;
 
     /// If this bit is set, a “write-through” policy is used for the cache, else a “write-back”
     /// policy is used.
-    const WRITE_THROUGH: u64 = 1 << 3;
+    pub const WRITE_THROUGH: u64 = 1 << 3;
 
     /// Disables caching for the pointed entry is cacheable.
-    const NO_CACHE: u64 = 1 << 4;
+    pub const NO_CACHE: u64 = 1 << 4;
 
     /// Set by the CPU when the mapped frame or page table is accessed.
-    const ACCESSED: u64 = 1 << 5;
+    pub const ACCESSED: u64 = 1 << 5;
 
     /// Set by the CPU on a write to the mapped frame.
-    const DIRTY: u64 = 1 << 6;
+    pub const DIRTY: u64 = 1 << 6;
 
     /// Specifies that the entry maps a huge frame instead of a page table. Only allowed in
     /// P2 or P3 tables.
-    const HUGE_PAGE: u64 = 1 << 7;
+    pub const HUGE_PAGE: u64 = 1 << 7;
 
     /// Indicates that the mapping is present in all address spaces, so it isn't flushed from
     /// the TLB on an address space switch.
-    const GLOBAL: u64 = 1 << 8;
+    pub const GLOBAL: u64 = 1 << 8;
 
     /// Forbid code execution from the mapped frames.
     ///
     /// Can be only used when the no-execute page protection feature is enabled in the EFER
     /// register.
-    const NO_EXECUTE: u64 = 1 << 63;
+    pub const NO_EXECUTE: u64 = 1 << 63;
 }
 
 /// A page table entry

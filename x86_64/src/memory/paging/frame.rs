@@ -11,7 +11,7 @@ use crate::memory::{
 use core::marker::PhantomData;
 
 /// A physical memory frame
-struct Frame<PS: FrameSize> {
+pub struct Frame<PS: FrameSize> {
     start_address: PhysicalMemoryAddress,
     frame_size: PhantomData<PS>,
 }
@@ -21,8 +21,19 @@ macro_rules! impl_frame_for_size {
         impl Frame<$size> {
             const SIZE_IN_BYTES: u64 = $size_in_bytes;
 
-            pub fn from_starting_address<T: Into<PhysicalMemoryAddress>>(
-                physical_address: T,
+            /// Return the frame containing the address `physical_address` as the starting address.
+            /// If the address can't be an starting address for a Frame (because it is not algined
+            /// correctly) it will return a `PagingError::InvalidAlign`
+            /// To be aligned, the physical address must be a multiple of the frame size in bytes
+            /// For example for a frame of 4KiB (4096 bytes):
+            /// 0 -> first frame,
+            /// 4096 -> second frame,
+            /// and so on..
+            ///
+            /// # Arguments
+            ///  * `physical_address`: Address used as the start address of the returned frame.
+            pub fn from_starting_address(
+                physical_address: PhysicalMemoryAddress,
             ) -> Result<Frame<$size>, PagingError> {
                 // To be aligned, the physical address must be a multiple of the frame size in bytes
                 // For example for a frame of 4KiB (4096 bytes):
@@ -38,6 +49,22 @@ macro_rules! impl_frame_for_size {
                     start_address: physical_address,
                     frame_size: PhantomData,
                 })
+            }
+
+            /// Return the frame containing the address `physical_address`
+            ///
+            /// # Arguments
+            ///  * `physical_address`: Address to be contained in the frame
+            pub fn containing_address(physical_address: PhysicalMemoryAddress) -> Frame<$size> {
+                let physical_address: PhysicalMemoryAddress = physical_address.into();
+                // Integer division!
+                let start_address: PhysicalMemoryAddress =
+                    PhysicalMemoryAddress::new(*physical_address / Self::SIZE_IN_BYTES);
+
+                Self {
+                    start_address,
+                    frame_size: PhantomData,
+                }
             }
         }
     };

@@ -16,7 +16,7 @@ pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
     use lil_os::{
         arch::x86_64::initialize_x86_64_arch, os_core::messages::init_with_message, println,
     };
-    use x86_64_custom::memory::address::VirtualMemoryAddress;
+    use x86_64_custom::memory::address::{PhysicalMemoryAddress, VirtualMemoryAddress};
 
     let physical_memory_offset = VirtualMemoryAddress::new(boot_info.physical_memory_offset);
 
@@ -31,6 +31,17 @@ pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
     println!("Translated address: {:?}", unsafe {
         TRANSLATOR.translate_address(VirtualMemoryAddress::new(boot_info.physical_memory_offset))
     });
+
+    fn test_map() {
+        use x86_64_custom::memory::paging::frame::Frame;
+        use x86_64_custom::memory::paging::frame_size::FrameSize4KiB;
+        use x86_64_custom::memory::paging::page_table::PageTableEntryFlags;
+        let frame = Frame::<FrameSize4KiB>::containing_address(PhysicalMemoryAddress::new(0xb8000));
+        let flags = PageTableEntryFlags::PRESENT | PageTableEntryFlags::WRITABLE;
+    }
+
+    test_map();
+
     #[allow(clippy::empty_loop)]
     loop {
         // Halts the CPU until the next interrupt hits. This prevents the CPU to spin endessly
