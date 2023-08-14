@@ -14,6 +14,11 @@ impl PhysicalMemoryAddress {
         // We set to zero the top 12 bits, since in x86_64 the lower 52 bits are used
         Self(address & 0x000f_ffff_ffff_ffff)
     }
+
+    /// Returns the address as u64
+    pub fn as_u64(&self) -> u64 {
+        self.0
+    }
 }
 
 impl Debug for PhysicalMemoryAddress {
