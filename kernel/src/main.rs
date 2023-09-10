@@ -39,7 +39,6 @@ pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
     fn test_map(physical_memory_offset: VirtualMemoryAddress) {
         use x86_64_custom::memory::paging::frame::Frame;
         use x86_64_custom::memory::paging::page_size::PageSize4KiB;
-        use x86_64_custom::memory::paging::page_table::PageTableEntryFlags;
         let frame = Frame::<PageSize4KiB>::containing_address(PhysicalMemoryAddress::new(0xb8000));
         let flags = PageTableEntryFlags::PRESENT | PageTableEntryFlags::WRITABLE;
 
@@ -48,10 +47,11 @@ pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
         let mapper = Mapper::<PageSize4KiB>::new(physical_memory_offset);
 
         unsafe {
-            println!(
-                "le map: {}",
-                mapper.map(page, frame, DummyAllocator, PageTableEntryFlags::WRITABLE)
-            );
+            // println!("le map: {}", mapper.map(page, frame, DummyAllocator, flags));
+
+            // write the string `New!` to the screen through the new mapping
+            let page_ptr: *mut u64 = page.start_address().as_mut_ptr();
+            page_ptr.offset(400).write_volatile(0x_f021_f077_f065_f04e);
         }
     }
 

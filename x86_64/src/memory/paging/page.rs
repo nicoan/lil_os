@@ -72,6 +72,11 @@ macro_rules! impl_page_for_size {
             pub fn get_page_table_index(&self, page_table_level: PageTableLevel) -> usize {
                 self.start_address.get_page_table_index(page_table_level)
             }
+
+            /// Returns the start address of this memory frame
+            pub fn start_address(&self) -> VirtualMemoryAddress {
+                self.start_address
+            }
         }
     };
 }

@@ -59,6 +59,19 @@ impl PageTableEntryFlags {
 pub struct PageTableEntry(u64);
 
 impl PageTableEntry {
+    /// Creates a new page table entry.
+    ///
+    /// # Arguments
+    /// * `flags`: Entry's flags.
+    /// * `frame_starting_address`: Physical memory address the page is pointing to.
+    pub fn new(
+        flags: u64, // TODO: create a newtype or something like that here
+        frame_starting_address: PhysicalMemoryAddress,
+    ) -> Self {
+        // TODO
+        Self(flags | frame_starting_address.as_u64())
+    }
+
     /// Checks if this entry is a used entry
     pub fn is_used(&self) -> bool {
         self.0 != 0

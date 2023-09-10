@@ -51,7 +51,7 @@ macro_rules! impl_frame_for_size {
                 })
             }
 
-            /// Return the frame containing the address `physical_address`
+            /// Returns the frame containing the address `physical_address`
             ///
             /// # Arguments
             ///  * `physical_address`: Address to be contained in the frame
@@ -65,6 +65,11 @@ macro_rules! impl_frame_for_size {
                     start_address,
                     frame_size: PhantomData,
                 }
+            }
+
+            /// Returns the start address of this memory frame
+            pub fn start_address(&self) -> PhysicalMemoryAddress {
+                self.start_address
             }
         }
     };
