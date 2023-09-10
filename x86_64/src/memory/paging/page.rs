@@ -12,12 +12,15 @@ use crate::memory::{
 };
 use core::marker::PhantomData;
 
+// use crate::memory::paging::impl_page_or_frame_for_size;
+
 /// A virtual memory page
 pub struct Page<PS: PageSize> {
     start_address: VirtualMemoryAddress,
     page_size: PhantomData<PS>,
 }
 
+/*
 macro_rules! impl_page_for_size {
     ($size:ty, $size_in_bytes:expr) => {
         impl Page<$size> {
@@ -80,7 +83,8 @@ macro_rules! impl_page_for_size {
         }
     };
 }
+*/
 
-impl_page_for_size!(PageSize4KiB, 4096);
-impl_page_for_size!(PageSize2MiB, 2097152);
-impl_page_for_size!(PageSize1GiB, 1073741824);
+impl_page_or_frame_for_size!(PageSize4KiB, VirtualMemoryAddress, 4096);
+impl_page_or_frame_for_size!(PageSize2MiB, VirtualMemoryAddress, 2097152);
+impl_page_or_frame_for_size!(PageSize1GiB, VirtualMemoryAddress, 1073741824);
