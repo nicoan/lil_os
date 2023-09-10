@@ -4,14 +4,14 @@
 use crate::memory::{
     address::PhysicalMemoryAddress,
     paging::{
-        frame_size::{FrameSize, FrameSize1GiB, FrameSize2MiB, FrameSize4KiB},
+        page_size::{PageSize, PageSize1GiB, PageSize2MiB, PageSize4KiB},
         paging_error::PagingError,
     },
 };
 use core::marker::PhantomData;
 
 /// A physical memory frame
-pub struct Frame<PS: FrameSize> {
+pub struct Frame<PS: PageSize> {
     start_address: PhysicalMemoryAddress,
     frame_size: PhantomData<PS>,
 }
@@ -70,6 +70,6 @@ macro_rules! impl_frame_for_size {
     };
 }
 
-impl_frame_for_size!(FrameSize4KiB, 4096);
-impl_frame_for_size!(FrameSize2MiB, 2097152);
-impl_frame_for_size!(FrameSize1GiB, 1073741824);
+impl_frame_for_size!(PageSize4KiB, 4096);
+impl_frame_for_size!(PageSize2MiB, 2097152);
+impl_frame_for_size!(PageSize1GiB, 1073741824);

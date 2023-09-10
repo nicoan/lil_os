@@ -17,6 +17,10 @@ pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
         arch::x86_64::initialize_x86_64_arch, os_core::messages::init_with_message, println,
     };
     use x86_64_custom::memory::address::{PhysicalMemoryAddress, VirtualMemoryAddress};
+    use x86_64_custom::memory::frame_allocator::DummyAllocator;
+    use x86_64_custom::memory::mapper::Mapper;
+    use x86_64_custom::memory::paging::page::Page;
+    use x86_64_custom::memory::paging::page_table::PageTableEntryFlags;
 
     let physical_memory_offset = VirtualMemoryAddress::new(boot_info.physical_memory_offset);
 
@@ -32,15 +36,26 @@ pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
         TRANSLATOR.translate_address(VirtualMemoryAddress::new(boot_info.physical_memory_offset))
     });
 
-    fn test_map() {
+    fn test_map(physical_memory_offset: VirtualMemoryAddress) {
         use x86_64_custom::memory::paging::frame::Frame;
-        use x86_64_custom::memory::paging::frame_size::FrameSize4KiB;
+        use x86_64_custom::memory::paging::page_size::PageSize4KiB;
         use x86_64_custom::memory::paging::page_table::PageTableEntryFlags;
-        let frame = Frame::<FrameSize4KiB>::containing_address(PhysicalMemoryAddress::new(0xb8000));
+        let frame = Frame::<PageSize4KiB>::containing_address(PhysicalMemoryAddress::new(0xb8000));
         let flags = PageTableEntryFlags::PRESENT | PageTableEntryFlags::WRITABLE;
+
+        // map an unused page
+        let page = Page::<PageSize4KiB>::containing_address(VirtualMemoryAddress::new(0));
+        let mapper = Mapper::<PageSize4KiB>::new(physical_memory_offset);
+
+        unsafe {
+            println!(
+                "le map: {}",
+                mapper.map(page, frame, DummyAllocator, PageTableEntryFlags::WRITABLE)
+            );
+        }
     }
 
-    test_map();
+    test_map(physical_memory_offset);
 
     #[allow(clippy::empty_loop)]
     loop {

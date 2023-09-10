@@ -1,11 +1,12 @@
 //! This module represent a Page in the virtual adrress space.
 //!
 //! A page is just a block of consecutive virtual memory that maps to a block of consecutive
-//! virtual memory (page).
+//! physiacal memory (frame).
 use crate::memory::{
     address::VirtualMemoryAddress,
     paging::{
         page_size::{PageSize, PageSize1GiB, PageSize2MiB, PageSize4KiB},
+        page_table::PageTableLevel,
         paging_error::PagingError,
     },
 };
@@ -61,6 +62,15 @@ macro_rules! impl_page_for_size {
                     start_address,
                     page_size: PhantomData,
                 }
+            }
+            /// Returns page table index for this page
+            ///
+            /// Returns the selected level page table index.
+            ///
+            /// # Arguments
+            ///  * `page_table_level`: The page table level we want to retrieve the index.
+            pub fn get_page_table_index(&self, page_table_level: PageTableLevel) -> usize {
+                self.start_address.get_page_table_index(page_table_level)
             }
         }
     };

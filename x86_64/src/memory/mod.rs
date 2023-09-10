@@ -1,6 +1,6 @@
 pub mod address;
 pub mod frame_allocator;
-mod mapper;
+pub mod mapper;
 pub mod paging;
 mod translator;
 
