@@ -7,7 +7,7 @@ use crate::memory::address::PhysicalMemoryAddress;
 use crate::memory::paging::page_size::PageSize;
 use core::marker::PhantomData;
 
-use super::paging::page_size::PageSize4KiB;
+use super::paging::page_size::Size4KiB;
 
 // Represent a mapped physical frame of a certain size
 pub struct PhysicalFrame<PS: PageSize> {
@@ -24,8 +24,8 @@ pub trait FrameAllocator<PS: PageSize> {
 
 pub struct DummyAllocator;
 
-impl FrameAllocator<PageSize4KiB> for DummyAllocator {
-    unsafe fn allocate(&self) -> Option<PhysicalFrame<PageSize4KiB>> {
+impl FrameAllocator<Size4KiB> for DummyAllocator {
+    unsafe fn allocate(&self) -> Option<PhysicalFrame<Size4KiB>> {
         None
     }
 }

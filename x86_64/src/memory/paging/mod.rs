@@ -6,8 +6,8 @@ pub mod paging_error;
 
 #[macro_export]
 macro_rules! impl_page_or_frame_for_size {
-    ($size:ty, $address_type:ty, $size_in_bytes:expr) => {
-        impl Page<$size> {
+    ($struct:ident, $size:ty, $address_type:ty, $size_in_bytes:expr) => {
+        impl $struct<$size> {
             const SIZE_IN_BYTES: u64 = $size_in_bytes;
 
             /// Return the page containing the address `address` as the starting address.
@@ -23,14 +23,14 @@ macro_rules! impl_page_or_frame_for_size {
             ///  * `address`: Address used as the start address of the returned page.
             pub fn from_starting_address(
                 address: $address_type,
-            ) -> Result<Page<$size>, PagingError> {
+            ) -> Result<$struct<$size>, PagingError> {
                 if address.as_u64() % Self::SIZE_IN_BYTES != 0 {
                     return Err(PagingError::InvalidAlign);
                 }
 
                 Ok(Self {
                     start_address: address,
-                    page_size: PhantomData,
+                    size: PhantomData,
                 })
             }
 
@@ -38,14 +38,15 @@ macro_rules! impl_page_or_frame_for_size {
             ///
             /// # Arguments
             ///  * `address`: Address to be contained in the page
-            pub fn containing_address(address: $address_type) -> Page<$size> {
-                // Integer division!
+            pub fn containing_address(address: $address_type) -> $struct<$size> {
+                // TODO: Check this implementation, took from
+                // https://docs.rs/x86_64/0.14.10/src/x86_64/addr.rs.html#641
                 let start_address: $address_type =
-                    $address_type::new(*address / Self::SIZE_IN_BYTES);
+                    <$address_type>::new(*address & !(Self::SIZE_IN_BYTES - 1));
 
                 Self {
                     start_address,
-                    page_size: PhantomData,
+                    size: PhantomData,
                 }
             }
 

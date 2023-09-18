@@ -6,7 +6,7 @@ use super::{
     paging::{
         frame::Frame,
         page::Page,
-        page_size::PageSize4KiB,
+        page_size::Size4KiB,
         page_table::{PageTable, PageTableEntry, PageTableEntryFlags, PageTableLevel},
     },
 };
@@ -29,12 +29,12 @@ impl<PS: PageSize> Mapper<PS> {
     }
 }
 
-impl Mapper<PageSize4KiB> {
+impl Mapper<Size4KiB> {
     pub unsafe fn map(
         &self,
-        page: Page<PageSize4KiB>,
-        frame: Frame<PageSize4KiB>,
-        allocator: impl FrameAllocator<PageSize4KiB>,
+        page: Page<Size4KiB>,
+        frame: Frame<Size4KiB>,
+        allocator: impl FrameAllocator<Size4KiB>,
         flags: u64, // TODO: create a newtype or something like that here
     ) -> bool {
         let tables_indexes = [

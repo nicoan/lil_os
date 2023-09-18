@@ -16,11 +16,10 @@ pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
     use lil_os::{
         arch::x86_64::initialize_x86_64_arch, os_core::messages::init_with_message, println,
     };
+    use x86_64::structures::paging::PhysFrame;
     use x86_64_custom::memory::address::{PhysicalMemoryAddress, VirtualMemoryAddress};
     use x86_64_custom::memory::frame_allocator::DummyAllocator;
     use x86_64_custom::memory::mapper::Mapper;
-    use x86_64_custom::memory::paging::page::Page;
-    use x86_64_custom::memory::paging::page_table::PageTableEntryFlags;
 
     let physical_memory_offset = VirtualMemoryAddress::new(boot_info.physical_memory_offset);
 
@@ -38,20 +37,35 @@ pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
 
     fn test_map(physical_memory_offset: VirtualMemoryAddress) {
         use x86_64_custom::memory::paging::frame::Frame;
-        use x86_64_custom::memory::paging::page_size::PageSize4KiB;
-        let frame = Frame::<PageSize4KiB>::containing_address(PhysicalMemoryAddress::new(0xb8000));
+        use x86_64_custom::memory::paging::page::Page;
+        use x86_64_custom::memory::paging::page_size::Size4KiB;
+        use x86_64_custom::memory::paging::page_table::PageTableEntryFlags;
+        let frame = Frame::<Size4KiB>::containing_address(PhysicalMemoryAddress::new(0xb8000));
+        let frame2 = PhysFrame::<x86_64::structures::paging::Size4KiB>::containing_address(
+            x86_64::PhysAddr::new(0xb8000),
+        );
+        println!("{:?} {:?}", frame.start_address(), frame2.start_address());
         let flags = PageTableEntryFlags::PRESENT | PageTableEntryFlags::WRITABLE;
 
         // map an unused page
-        let page = Page::<PageSize4KiB>::containing_address(VirtualMemoryAddress::new(0));
-        let mapper = Mapper::<PageSize4KiB>::new(physical_memory_offset);
+        let page = Page::<Size4KiB>::containing_address(VirtualMemoryAddress::new(0));
+        let page2 = x86_64::structures::paging::Page::<x86_64::structures::paging::Size4KiB>::containing_address(
+            x86_64::VirtAddr::new(0),
+        );
+        println!("{:?} {:?}", page, page2);
+        let mapper = Mapper::<Size4KiB>::new(physical_memory_offset);
 
         unsafe {
-            // println!("le map: {}", mapper.map(page, frame, DummyAllocator, flags));
+            let phys = TRANSLATOR.translate_address(VirtualMemoryAddress::new(0xb8000));
+            let phys2 = PhysicalMemoryAddress::new(0xb8000);
+            println!("{:?} {:?}", phys, phys2);
+            println!("le map: {}", mapper.map(page, frame, DummyAllocator, flags));
 
             // write the string `New!` to the screen through the new mapping
             let page_ptr: *mut u64 = page.start_address().as_mut_ptr();
-            page_ptr.offset(400).write_volatile(0x_f021_f077_f065_f04e);
+
+            println!("{:?}", page_ptr.offset(0));
+            // page_ptr.offset(400).write_volatile(0x_f021_f077_f065_f04e);
         }
     }
 

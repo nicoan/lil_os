@@ -3,13 +3,16 @@
 pub trait PageSize {}
 
 /// Represents a page (or frame) size of 4 KiB
-pub struct PageSize4KiB;
-impl PageSize for PageSize4KiB {}
+#[derive(Clone, Copy, Debug)]
+pub struct Size4KiB;
+impl PageSize for Size4KiB {}
 
 /// Represents a (huge) page (or frame) size of 2 MiB
-pub struct PageSize2MiB;
-impl PageSize for PageSize2MiB {}
+#[derive(Clone, Copy, Debug)]
+pub struct Size2MiB;
+impl PageSize for Size2MiB {}
 
 /// Represents a (huge) page (or frame) size of 1 GiB
-pub struct PageSize1GiB;
-impl PageSize for PageSize1GiB {}
+#[derive(Clone, Copy, Debug)]
+pub struct Size1GiB;
+impl PageSize for Size1GiB {}
