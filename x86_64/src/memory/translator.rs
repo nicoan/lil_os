@@ -88,6 +88,7 @@ impl Translator {
                 // If we transversed two levels we are in the level 3 page table, meaning that we
                 // have a 1GB page mapped to phisical memory. In this case bits 30 to 1 are used as
                 // offset
+                // TODO: Move this to get_offset in VirtualMemoryAddress
                 let offset = if transversed_level == 2 {
                     address.as_u64() & 0x3fffffff
                 }

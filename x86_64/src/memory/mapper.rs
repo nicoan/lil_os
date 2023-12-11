@@ -54,17 +54,19 @@ impl Mapper<Size4KiB> {
         // This is initialized here and rewritten in the for loop because rust complains otherwise
         let mut next_page_table: &mut PageTable =
             &mut *(self.physical_memory_offset + next_page_table_physical_address).as_mut_ptr();
+        next_page_table_physical_address = next_page_table[tables_indexes[0]].address();
+
         // Transverse tables
-        for (_transversed_level, table_index) in tables_indexes.iter().enumerate() {
+        for table_index in &tables_indexes[1..] {
             next_page_table =
                 &mut *(self.physical_memory_offset + next_page_table_physical_address).as_mut_ptr();
 
+            // TODO: If not allocated...
             next_page_table_physical_address = next_page_table[*table_index].address();
         }
 
         // At this level we must have reached the last PageTable (level 1), we need to write this
         // page entry to point the frame
-
         next_page_table[tables_indexes[3]] =
             PageTableEntry::new(PageTableEntryFlags::PRESENT | flags, frame.start_address());
         next_page_table[tables_indexes[3]].is_used()
