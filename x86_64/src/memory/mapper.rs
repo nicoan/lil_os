@@ -29,6 +29,7 @@ impl<PS: PageSize> Mapper<PS> {
     }
 }
 
+// TODO: Check https://docs.rs/x86_64/latest/src/x86_64/structures/paging/mapper/mapped_page_table.rs.html
 macro_rules! impl_mapper_for_size {
     ($size:ty, $pt_levels:expr, $pt_levels_qty:literal) => {
         impl Mapper<$size> {
