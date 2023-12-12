@@ -6,7 +6,7 @@ use super::{
     paging::{
         frame::Frame,
         page::Page,
-        page_size::Size4KiB,
+        page_size::{Size1GiB, Size2MiB, Size4KiB},
         page_table::{PageTable, PageTableEntry, PageTableEntryFlags, PageTableLevel},
     },
 };
@@ -29,46 +29,91 @@ impl<PS: PageSize> Mapper<PS> {
     }
 }
 
-impl Mapper<Size4KiB> {
-    pub unsafe fn map(
-        &self,
-        page: Page<Size4KiB>,
-        frame: Frame<Size4KiB>,
-        allocator: impl FrameAllocator<Size4KiB>,
-        flags: u64, // TODO: create a newtype or something like that here
-    ) -> bool {
-        let tables_indexes = [
-            page.get_page_table_index(PageTableLevel::Level4),
-            page.get_page_table_index(PageTableLevel::Level3),
-            page.get_page_table_index(PageTableLevel::Level2),
-            page.get_page_table_index(PageTableLevel::Level1),
-        ];
-        // TODO: Allocate new page table if not present
-        // At the moment we are ignoring the allocation of tables, we just want to use existing
-        // page tables to map a frame
+macro_rules! impl_mapper_for_size {
+    ($size:ty, $pt_levels:expr, $pt_levels_qty:literal) => {
+        impl Mapper<$size> {
+            /// Ordered levels that this mapper has to go through to get to the page table that actually
+            /// points to the physical frame
+            const PAGE_TABLE_LEVELS: [PageTableLevel; $pt_levels_qty] = $pt_levels;
 
-        // TODO: Generalize to all page sizes
-        // Get the level 4 page table (PDPT)
-        let mut next_page_table_physical_address = Cr3::read();
+            /// Maps a virtual page to a physical frame. If a table at any level do not exist,
+            /// space is allocated to save the new table.
+            ///
+            /// # Safety
+            /// This function is unsafe because the caller must asure that the Page is not mapped
+            /// yet.
+            pub unsafe fn map(
+                &self,
+                page: Page<$size>,
+                frame: Frame<$size>,
+                _allocator: impl FrameAllocator<$size>,
+                flags: u64, // TODO: create a newtype or something like that here
+            ) -> bool {
+                // TODO: Allocate new page table if not present
+                // At the moment we are ignoring the allocation of tables, we just want to use existing
+                // page tables to map a frame
 
-        // This is initialized here and rewritten in the for loop because rust complains otherwise
-        let mut next_page_table: &mut PageTable =
-            &mut *(self.physical_memory_offset + next_page_table_physical_address).as_mut_ptr();
-        next_page_table_physical_address = next_page_table[tables_indexes[0]].address();
+                // TODO: Generalize to all page sizes
+                // Get the level 4 page table (PDPT)
+                let mut next_page_table_physical_address = Cr3::read();
 
-        // Transverse tables
-        for table_index in &tables_indexes[1..] {
-            next_page_table =
-                &mut *(self.physical_memory_offset + next_page_table_physical_address).as_mut_ptr();
+                // This is initialized here loop because rust complains otherwise
+                let mut next_page_table: &mut PageTable = &mut *(self.physical_memory_offset
+                    + next_page_table_physical_address)
+                    .as_mut_ptr();
+                let level_4_page_table_index =
+                    page.get_page_table_index(Self::PAGE_TABLE_LEVELS[0]);
+                next_page_table_physical_address =
+                    next_page_table[level_4_page_table_index].address();
 
-            // TODO: If not allocated...
-            next_page_table_physical_address = next_page_table[*table_index].address();
+                // Transverse tables
+                for page_table_level in &Self::PAGE_TABLE_LEVELS[1..] {
+                    next_page_table = &mut *(self.physical_memory_offset
+                        + next_page_table_physical_address)
+                        .as_mut_ptr();
+
+                    // TODO: If not allocated...
+                    next_page_table_physical_address =
+                        next_page_table[page.get_page_table_index(*page_table_level)].address();
+                }
+
+                // At this level we must have reached the last PageTable (level 1), we need to write this
+                // page entry to point the frame
+                let last_level_page_table_index =
+                    page.get_page_table_index(Self::PAGE_TABLE_LEVELS[$pt_levels_qty - 1]);
+                next_page_table[last_level_page_table_index] = PageTableEntry::new(
+                    PageTableEntryFlags::PRESENT | flags,
+                    frame.start_address(),
+                );
+                next_page_table[last_level_page_table_index].is_used()
+            }
         }
-
-        // At this level we must have reached the last PageTable (level 1), we need to write this
-        // page entry to point the frame
-        next_page_table[tables_indexes[3]] =
-            PageTableEntry::new(PageTableEntryFlags::PRESENT | flags, frame.start_address());
-        next_page_table[tables_indexes[3]].is_used()
-    }
+    };
 }
+
+impl_mapper_for_size!(
+    Size4KiB,
+    [
+        PageTableLevel::Level4,
+        PageTableLevel::Level3,
+        PageTableLevel::Level2,
+        PageTableLevel::Level1,
+    ],
+    4
+);
+
+impl_mapper_for_size!(
+    Size2MiB,
+    [
+        PageTableLevel::Level4,
+        PageTableLevel::Level3,
+        PageTableLevel::Level2,
+    ],
+    3
+);
+
+impl_mapper_for_size!(
+    Size1GiB,
+    [PageTableLevel::Level4, PageTableLevel::Level3,],
+    2
+);

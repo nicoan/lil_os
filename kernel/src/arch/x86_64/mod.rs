@@ -7,9 +7,8 @@ mod paging;
 use crate::synchronization::spinlock::Mutex;
 use x86_64_custom::interrupts::IBMPcAt8259;
 use x86_64_custom::memory::address::VirtualMemoryAddress;
-//use x86_64_custom::memory::Translator;
+use x86_64_custom::memory::Translator;
 
-use crate::memory::Translator; //, Translator};
 pub use paging::TRANSLATOR;
 // TODO The idea here is to define a trait that abstacts away the interruption habdling either if
 // it is with the IBM PC/AT 8259 Architecture or with the APIC interface.
@@ -29,3 +28,6 @@ pub fn initialize_x86_64_arch(physical_memory_offset: VirtualMemoryAddress) {
     // TODO: we are reassigning a static mut, check if we can do this in some other way
     unsafe { TRANSLATOR = Translator::new(physical_memory_offset) }
 }
+
+// NOTE: For debugging
+// use crate::memory::Translator;

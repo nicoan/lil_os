@@ -1,3 +1,9 @@
+pub mod allocator;
+pub mod frame_allocator;
+pub mod volatile;
+
+// TODO: BELOW IS JUST FOR DEBUGGING, REMOVE!
+/*
 use x86_64_custom::{
     memory::{
         address::{PhysicalMemoryAddress, VirtualMemoryAddress},
@@ -8,12 +14,6 @@ use x86_64_custom::{
 
 use crate::println;
 
-pub mod allocator;
-pub mod frame_allocator;
-pub mod volatile;
-
-// TODO: BELOW IS JUST FOR DEBUGGING, REMOVE!
-/// Provides a virtual memory.
 pub struct Translator {
     /// This is the virtual memory offset where the page tables are allocated.
     physical_memory_offset: VirtualMemoryAddress,
@@ -113,3 +113,4 @@ impl Translator {
         ))
     }
 }
+*/
