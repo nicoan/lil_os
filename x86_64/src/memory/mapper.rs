@@ -62,10 +62,14 @@ macro_rules! impl_mapper_for_size {
                 let mut next_page_table: &mut PageTable = &mut *(self.physical_memory_offset
                     + next_page_table_physical_address)
                     .as_mut_ptr();
-                let level_4_page_table_index =
-                    page.get_page_table_index(Self::PAGE_TABLE_LEVELS[0]);
-                next_page_table_physical_address =
-                    next_page_table[level_4_page_table_index].address();
+
+                let next_page_table_entry =
+                    &mut next_page_table[page.get_page_table_index(Self::PAGE_TABLE_LEVELS[0])];
+
+                // Set flags
+                (*next_page_table_entry).set_flags(next_page_table_entry.get_flags() | flags);
+
+                next_page_table_physical_address = next_page_table_entry.address();
 
                 // Transverse tables
                 for page_table_level in &Self::PAGE_TABLE_LEVELS[1..] {
@@ -73,9 +77,14 @@ macro_rules! impl_mapper_for_size {
                         + next_page_table_physical_address)
                         .as_mut_ptr();
 
+                    let next_page_table_entry =
+                        &mut next_page_table[page.get_page_table_index(*page_table_level)];
+
+                    // Set flags
+                    (*next_page_table_entry).set_flags(next_page_table_entry.get_flags() | flags);
+
                     // TODO: If not allocated...
-                    next_page_table_physical_address =
-                        next_page_table[page.get_page_table_index(*page_table_level)].address();
+                    next_page_table_physical_address = next_page_table_entry.address();
                 }
 
                 // At this level we must have reached the last PageTable (level 1), we need to write this

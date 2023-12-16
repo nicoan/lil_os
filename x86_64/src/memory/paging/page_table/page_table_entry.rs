@@ -93,6 +93,21 @@ impl PageTableEntry {
     pub fn address(&self) -> PhysicalMemoryAddress {
         PhysicalMemoryAddress(self.0 & 0x000f_ffff_ffff_f000)
     }
+
+    /// Sets entry flags
+    ///
+    /// # Arguments
+    /// * `flags`: Entry's flags.
+    pub fn set_flags(&mut self, flags: u64) {
+        self.0 |= flags
+    }
+
+    /// Returns the flags used by page table entry.
+    ///
+    /// The physical address is contained between bits 52..12.
+    pub fn get_flags(&self) -> u64 {
+        self.0 & 0xfff0_0000_0000_0000
+    }
 }
 
 impl Deref for PageTableEntry {
