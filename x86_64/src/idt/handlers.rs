@@ -12,8 +12,10 @@ pub type HandlerFuncWithErrCodeDiverging =
     extern "x86-interrupt" fn(_: InterruptStackFrame, _: u64) -> !;
 
 // TODO: Change type
+pub type PageFaultErrorCode = u64;
 /// Page Fault exception handler function
-pub type PageFaultHandlerFunc = extern "x86-interrupt" fn(_: InterruptStackFrame);
+pub type PageFaultHandlerFunc =
+    extern "x86-interrupt" fn(_: InterruptStackFrame, _: PageFaultErrorCode);
 
 /// Interrupt Stack Frame
 ///

@@ -45,8 +45,8 @@ pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
             x86_64::PhysAddr::new(0xb8000),
         );
         println!("{:?} {:?}", frame.start_address(), frame2.start_address());
-        let flags = PageTableEntryFlags::PRESENT
-            | PageTableEntryFlags::WRITABLE
+        let flags = // PageTableEntryFlags::PRESENT
+             PageTableEntryFlags::WRITABLE
             | PageTableEntryFlags::USER_ACCESSIBLE;
 
         // map an unused page
