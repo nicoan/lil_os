@@ -7,7 +7,7 @@ mod paging;
 use crate::synchronization::spinlock::Mutex;
 use x86_64_custom::interrupts::IBMPcAt8259;
 use x86_64_custom::memory::address::VirtualMemoryAddress;
-// use x86_64_custom::memory::Translator;
+use x86_64_custom::memory::Translator;
 
 pub use paging::TRANSLATOR;
 // TODO The idea here is to define a trait that abstacts away the interruption habdling either if
@@ -30,4 +30,4 @@ pub fn initialize_x86_64_arch(physical_memory_offset: VirtualMemoryAddress) {
 }
 
 // NOTE: For debugging
-use crate::memory::Translator;
+// use crate::memory::Translator;

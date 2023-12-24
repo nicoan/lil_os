@@ -2,6 +2,7 @@ pub mod allocator;
 pub mod frame_allocator;
 pub mod volatile;
 
+/*
 // TODO: BELOW IS JUST FOR DEBUGGING, REMOVE!
 use x86_64_custom::{
     memory::{
@@ -115,3 +116,4 @@ impl Translator {
         ))
     }
 }
+*/

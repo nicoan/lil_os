@@ -14,7 +14,7 @@ pub extern "x86-interrupt" fn page_fault_handler(
     stack_frame: InterruptStackFrame,
     error_code: u64,
 ) {
-    println!("Error code: {}", error_code as u64);
+    println!("Error code: {error_code}");
     println!("Exception PAGE FAULT reached\n {:#?}", stack_frame);
 }
 
@@ -22,10 +22,9 @@ pub extern "x86-interrupt" fn double_fault_handler(
     stack_frame: InterruptStackFrame,
     error_code: u64,
 ) -> ! {
-    loop {}
-    // panic_screen!(
-    //    "Exception DOUBLE FAULT reached\n\n{}Error code: {}",
-    //    stack_frame,
-    //    error_code
-    // );
+    panic_screen!(
+        "Exception DOUBLE FAULT reached\n\n{}Error code: {}",
+        stack_frame,
+        error_code
+    );
 }

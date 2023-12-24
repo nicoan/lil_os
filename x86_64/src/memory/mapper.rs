@@ -43,6 +43,7 @@ macro_rules! impl_mapper_for_size {
             /// # Safety
             /// This function is unsafe because the caller must asure that the Page is not mapped
             /// yet.
+            //TODO: Return mapper flush
             pub unsafe fn map(
                 &self,
                 page: Page<$size>,

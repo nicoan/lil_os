@@ -2,7 +2,6 @@
 //!
 //! Flags comments taken from
 //! https://docs.rs/x86_64/latest/src/x86_64/structures/paging/page_table.rs.html
-use core::fmt::Display;
 use core::ops::Deref;
 
 use crate::memory::address::PhysicalMemoryAddress;
