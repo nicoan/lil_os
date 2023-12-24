@@ -11,7 +11,7 @@ pub struct PageTableEntryFlags;
 
 impl PageTableEntryFlags {
     /// Specifies if the mapped frame or page table is loaded memory
-    pub const PRESENT: u64 = 1 << 1;
+    pub const PRESENT: u64 = 1;
 
     /// Controls whether writes to the mapped frames are allowed.
     ///
@@ -55,7 +55,6 @@ impl PageTableEntryFlags {
 /// A page entry contains the a physical memory address address (bits 52..12) and flags
 /// https://wiki.osdev.org/Paging
 #[repr(transparent)]
-#[derive(Debug)]
 pub struct PageTableEntry(u64);
 
 impl PageTableEntry {
@@ -106,7 +105,7 @@ impl PageTableEntry {
     ///
     /// The physical address is contained between bits 52..12.
     pub fn get_flags(&self) -> u64 {
-        self.0 & 0xfff0_0000_0000_0000
+        self.0 & 0x0000_0000_0000_0fff
     }
 }
 
@@ -118,13 +117,23 @@ impl Deref for PageTableEntry {
     }
 }
 
-impl Display for PageTableEntry {
+impl core::fmt::Debug for PageTableEntry {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(
             f,
-            "PageTableEntry - Physical Address: {:?}. Present: {}",
+            "PageTableEntry - Physical Address: {:?}. Present: {}, Writable: {}, User Accesible: {}, Write Through: {}, No Cache. {}. Accesed: {}, Dirty: {}, Huge Page: {}, Gloal: {}, No execute: {}. Flags: {:#012b}",
             self.address(),
-            self.is_present(),
+            self.0 & PageTableEntryFlags::PRESENT > 0,
+            self.0 & PageTableEntryFlags::WRITABLE > 0,
+            self.0 & PageTableEntryFlags::USER_ACCESSIBLE > 0,
+            self.0 & PageTableEntryFlags::WRITE_THROUGH > 0,
+            self.0 & PageTableEntryFlags::NO_CACHE > 0,
+            self.0 & PageTableEntryFlags::ACCESSED > 0,
+            self.0 & PageTableEntryFlags::DIRTY > 0,
+            self.0 & PageTableEntryFlags::HUGE_PAGE > 0,
+            self.0 & PageTableEntryFlags::GLOBAL > 0,
+            self.0 & PageTableEntryFlags::NO_EXECUTE > 0,
+            self.get_flags()
         )
     }
 }

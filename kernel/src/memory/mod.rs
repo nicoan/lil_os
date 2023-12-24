@@ -3,7 +3,6 @@ pub mod frame_allocator;
 pub mod volatile;
 
 // TODO: BELOW IS JUST FOR DEBUGGING, REMOVE!
-/*
 use x86_64_custom::{
     memory::{
         address::{PhysicalMemoryAddress, VirtualMemoryAddress},
@@ -49,21 +48,24 @@ impl Translator {
         let mut next_page_table_physical_address = Cr3::read();
         // Go through all the page tables until we reach the last one
         for (transversed_level, table_index) in tables_indexes.iter().enumerate() {
-            println!("Level: {transversed_level:?} - Table index {table_index:?}");
             // Get the next level page table virtual address from the physical address plus the offset.
             let next_page_table_virtual_address =
                 self.physical_memory_offset + next_page_table_physical_address;
             let next_table: &PageTable = &*next_page_table_virtual_address.as_mut_ptr();
 
-            println!("Next PT virtual address: {next_page_table_virtual_address:?}");
+            /*
             println!(
                 "Next PT physical address: {:?}",
                 next_table[*table_index].address()
             );
-            println!(
-                "PageTable entry at index {table_index}: {:?}",
-                next_table[*table_index]
-            );
+            */
+            if transversed_level == 3 {
+                println!("Level: {transversed_level:?} - Table index {table_index:?}");
+                println!(
+                    "PageTable entry at index {table_index}: {:?}",
+                    next_table[*table_index]
+                );
+            }
             // If the entry is not present then we return None
             if !next_table[*table_index].is_present() {
                 return None;
@@ -113,4 +115,3 @@ impl Translator {
         ))
     }
 }
-*/
