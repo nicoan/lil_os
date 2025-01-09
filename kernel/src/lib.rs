@@ -7,11 +7,18 @@
 #![reexport_test_harness_main = "test_main"]
 // Enable x86 interrupt ABI
 #![feature(abi_x86_interrupt)]
+// Kernel memory allocator custom error handler
+#![feature(alloc_error_handler)]
+
+// Declare the use of buit-in alloc crate for dynamic memory managment and collection types
+extern crate alloc;
 
 pub mod arch;
 pub mod drivers;
 pub mod interrupts;
+pub mod memory;
 pub mod os_core;
+pub mod synchronization;
 pub mod tests;
 
 // "Global scope" exports

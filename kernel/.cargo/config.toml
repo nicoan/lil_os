@@ -4,7 +4,8 @@
 # https://os.phil-opp.com/minimal-rust-kernel/#memory-related-intrinsics
 build-std-features = ["compiler-builtins-mem"]
 # https://os.phil-opp.com/minimal-rust-kernel/#the-build-std-option
-build-std = ["core", "compiler_builtins"]
+# https://os.phil-opp.com/heap-allocation/#the-allocator-interface
+build-std = ["core", "compiler_builtins", "alloc"]
 
 # https://os.phil-opp.com/minimal-rust-kernel/#set-a-default-target
 [build]

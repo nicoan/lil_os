@@ -6,13 +6,62 @@
 #![test_runner(lil_os::tests::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+use bootloader::BootInfo;
+
 /// Entrypoint of our OS
 #[no_mangle]
 #[cfg(not(test))]
-pub extern "C" fn _start() -> ! {
-    use lil_os::{arch::x86_64::initialize_x86_64_arch, os_core::messages::init_with_message};
+pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
+    use lil_os::arch::x86_64::TRANSLATOR;
+    use lil_os::{
+        arch::x86_64::initialize_x86_64_arch, os_core::messages::init_with_message, println,
+    };
+    // use x86_64::structures::paging::PhysFrame;
+    use x86_64_custom::memory::address::{PhysicalMemoryAddress, VirtualMemoryAddress};
+    use x86_64_custom::memory::frame_allocator::DummyAllocator;
+    use x86_64_custom::memory::mapper::Mapper;
 
-    init_with_message("x86_64 architecture", initialize_x86_64_arch);
+    let physical_memory_offset = VirtualMemoryAddress::new(boot_info.physical_memory_offset);
+
+    init_with_message("x86_64 architecture", || {
+        initialize_x86_64_arch(physical_memory_offset)
+    });
+
+    /*
+    println!("Translated address: {:?}", unsafe {
+        TRANSLATOR.translate_address(VirtualMemoryAddress::new(0xb8000))
+    });
+
+    println!("Translated address: {:?}", unsafe {
+        TRANSLATOR.translate_address(VirtualMemoryAddress::new(boot_info.physical_memory_offset))
+    });*/
+
+    fn test_map(physical_memory_offset: VirtualMemoryAddress) {
+        use x86_64_custom::memory::paging::frame::Frame;
+        use x86_64_custom::memory::paging::page::Page;
+        use x86_64_custom::memory::paging::page_size::Size4KiB;
+        use x86_64_custom::memory::paging::page_table::PageTableEntryFlags;
+        let frame = Frame::<Size4KiB>::containing_address(PhysicalMemoryAddress::new(0xb8000));
+        let flags = PageTableEntryFlags::PRESENT | PageTableEntryFlags::WRITABLE;
+
+        // map an unused page
+        let page = Page::<Size4KiB>::containing_address(VirtualMemoryAddress::new(0));
+        let mapper = Mapper::<Size4KiB>::new(physical_memory_offset);
+
+        unsafe {
+            mapper.map(page, frame, DummyAllocator, flags);
+            println!(
+                "Translated address: {:?}",
+                TRANSLATOR.translate_address(VirtualMemoryAddress::new(0x0))
+            );
+
+            // write the string `New!` to the screen through the new mapping
+            let page_ptr: *mut u64 = page.start_address().as_mut_ptr();
+            page_ptr.offset(400).write_volatile(0x_f021_f077_f065_f04e);
+        }
+    }
+
+    test_map(physical_memory_offset);
 
     #[allow(clippy::empty_loop)]
     loop {

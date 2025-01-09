@@ -6,6 +6,7 @@ use crate::{
     tests::{exit_qemu, QemuExitCode},
 };
 use x86_64_custom::idt::{InterruptDescriptorTable, InterruptStackFrame};
+use x86_64_custom::memory::address::VirtualMemoryAddress;
 
 /// Tests if an interruption handler triggers.
 ///
@@ -16,7 +17,8 @@ pub fn test_handler_body(
     test: impl Fn(),
 ) {
     serial_print!("{description}...\t");
-    initialize_x86_64_arch();
+    // TODO: This must not be zero!
+    initialize_x86_64_arch(VirtualMemoryAddress::zero());
     idt.load();
 
     test();

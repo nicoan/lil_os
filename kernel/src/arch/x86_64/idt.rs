@@ -1,7 +1,10 @@
 //! Interrupt descriptor table initialization
+
 use super::interrupts::{
     hardware::{keyboard_interrupt_handler, timer_interrupt_handler},
-    software::{breakpoint_handler, divide_by_zero_handler, double_fault_handler},
+    software::{
+        breakpoint_handler, divide_by_zero_handler, double_fault_handler, page_fault_handler,
+    },
 };
 use lazy_static::lazy_static;
 use x86_64_custom::{
@@ -16,6 +19,7 @@ lazy_static! {
         idt.breakpoint.set_handler_function(breakpoint_handler);
         idt.divide_by_zero
             .set_handler_function(divide_by_zero_handler);
+        idt.page_fault.set_handler_function(page_fault_handler);
         idt.double_fault
             .set_handler_function(double_fault_handler)
             .set_stack_index(DOUBLE_FAULT_IST_INDEX);

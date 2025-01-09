@@ -4,13 +4,12 @@
 #![allow(clippy::empty_loop)]
 use core::panic::PanicInfo;
 use lazy_static::lazy_static;
-use lil_os::{
-    x86_64_custom::idt::InterruptDescriptorTable,
-    tests::{
-        idt::{test_handler, test_handler_body},
-        test_panic_handler,
-    },
+use lil_os::tests::{
+    idt::{test_handler, test_handler_body},
+    test_panic_handler,
 };
+
+use x86_64_custom::idt::InterruptDescriptorTable;
 
 lazy_static! {
     static ref IDT: InterruptDescriptorTable = {

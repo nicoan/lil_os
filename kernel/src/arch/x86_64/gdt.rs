@@ -19,17 +19,13 @@ lazy_static! {
 
         // Initialize the segment selectors
         let Ok(kernel_code_segment_selector) = gdt.add_entry(Descriptor::kernel_code_segment()) else {
-            // TODO: Panic screen should diverge, but it does not, thats why it is the panic there
              panic_screen!("{}\n{:?}", ERROR_GDT_FULL, gdt);
-             panic!();
         };
         gdt.add_entry(Descriptor::kernel_data_segment());
         gdt.add_entry(Descriptor::user_code_segment());
         gdt.add_entry(Descriptor::user_data_segment());
         let Ok(tss_selector) = gdt.add_entry(Descriptor::task_state_segment(&TSS)) else {
-            // TODO: Panic screen should diverge, but it does not, thats why it is the panic there
              panic_screen!("{}\n{:?}", ERROR_GDT_FULL, gdt);
-             panic!();
         };
 
         let selectors = GDTSelectors {

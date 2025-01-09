@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
 
-use crate::{os_core::synchronization::spinlock::Mutex, print};
+use crate::{print, synchronization::spinlock::Mutex};
 
 lazy_static! {
     static ref KEYBOARD: Mutex<Keyboard<layouts::Us104Key, ScancodeSet1>> =
